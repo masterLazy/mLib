@@ -17,5 +17,5 @@
 编码（Base64，UTF-8，URI）
 ## 6. mNetwork.h
 神经网络
-1. mNetwork/fnn.h，全连接层
-2. mNetwork/cnn.h，卷积层
+1. mNetwork/fnn.h，全连接神经网络
+2. mNetwork/cnn.h，卷积神经网络
