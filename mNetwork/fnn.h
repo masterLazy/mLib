@@ -1,405 +1,344 @@
 #pragma once
-/******************************************************
+/*****************************************************************************
 * fnn.h
-* 全连接层
+* 全连接神经网络
 *
-******************************************************/
+*****************************************************************************/
 
-namespace fnn
+namespace mlib
 {
-	/******************************************************
-	* Layer
-	* 层
+	/*****************************************************************************
+	* FnnLayer
+	* 全连接层
 	*
-	******************************************************/
+	*****************************************************************************/
 
-	class Layer
+	class FnnLayer
 	{
 	private:
-		int size;
-		int fun;	//使用的激活函数
-
+		size_t last_size;
 	public:
-		Layer* parent;		//父层(上一层)
-		vector<Net_F> z;	//没送进激活函数的
-		vector<Net_F> a;	//激活值
-		vector<Net_F> w;	//权重, w_i(本层)j(上层)=w[i*parent_size+j]
-		vector<Net_F> b;	//偏置
+		//训练次数
+		size_t times = 0;
+		//参数
+		Vector z;
+		Vector a;
+		Matrix w;//(本层,上层)
+		Vector b;
+		int fun;
+		//改变值
+		Matrix wC;
+		Vector bC;
 
-		vector<Net_F> da;	//激活值 偏导值
-		vector<Net_F> wC;	//权重 改变值
-		vector<Net_F> bC;	//偏置 改变值
-
-		//初始化
-		void Init(const int _size, int _fun = 0, Layer* const _parent = nullptr)
+		FnnLayer(const size_t size, const size_t last_layer_size, const int _fun)
 		{
-			fun = _fun;
-			size = _size;
-			parent = _parent;
+			last_size = last_layer_size;
 
 			z.resize(size);
-
 			a.resize(size);
-			da.resize(size);
-			if (parent != nullptr)
-			{
-				w.resize(size * parent->size);
-				wC.resize(size * parent->size);
+			w.resize(size, last_size);
+			b.resize(size);
 
-				b.resize(size);
-				bC.resize(size);
-			}
+			wC.resize(size, last_size);
+			bC.resize(size);
 
-			for (int i = 0; i < w.size(); i++)
-			{
-				w[i] = (Net_F)rand() / RAND_MAX * 2 - 1;
-				wC[i] = 0;
-			}
-			for (int i = 0; i < b.size(); i++)
-			{
-				b[i] = (Net_F)rand() / RAND_MAX * 2 - 1;
-				bC[i] = 0;
-			}
+			//随机化
+			a.work(_Random);
+			w.work(_Random);
+			b.work(_Random);
+
+			fun = _fun;
 		}
 
-		//获取层大小(节点数)
-		int Size()
+		//获取大小
+		size_t size()
 		{
-			return size;
+			return a.size();
 		}
 
-		//计算激活值
-		bool Work()
+		//正向传播
+		Vector work(const Vector& input)
 		{
-			if (parent == nullptr)
+			z.fill(0);//清空z
+			z = w * input;
+			z += b;
+			for (size_t i = 0; i < size(); i++)
 			{
-				return false;
-			}
-			for (int i = 0; i < size; i++)
-			{
-				z[i] = 0;
-				for (int j = 0; j < parent->size; j++)
-				{
-					z[i] += parent->a[j] * w[i * parent->size + j];
-				}
-				z[i] += b[i];
 				a[i] = Act(z[i], fun);
 			}
-			return true;
+			return a;
 		}
 
-		//学习新的训练样本(反向传播)
-		void NewTrain(vector<Net_F> _y)
+		//获取偏导
+		Vector get_da(const Vector& correct)
 		{
-			if (parent == nullptr)return;
-			if (_y.size() != size)return;
-
-			for (int i = 0; i < size; i++)
+			Vector res(size());
+			for (size_t i = 0; i < size(); i++)
 			{
-				Net_F temp = dAct(z[i], fun) * 2 * (a[i] - _y[i]);
-				//cout << a[i] + aC[i] << endl;
-				//cin.get();
-				for (int j = 0; j < parent->size; j++)
-				{
-					wC[i * parent->size + j] -= parent->a[j] * temp;
-					parent->da[j] += w[i * parent->size + j] * temp;
-				}
-				bC[i] -= temp;
+				res[i] = 2 * (a[i] - correct.get(i));
 			}
-			parent->NewTrain();
-		}
-		void NewTrain()
-		{
-			if (parent == nullptr)return;
-
-			for (int i = 0; i < size; i++)
-			{
-				Net_F temp = dAct(z[i], fun) * da[i];
-				//cout << a[i] + aC[i] << endl;
-				//cin.get();
-				for (int j = 0; j < parent->size; j++)
-				{
-					wC[i * parent->size + j] -= parent->a[j] * temp;
-					parent->da[j] += w[i * parent->size + j] * temp;
-				}
-				bC[i] -= temp;
-			}
-			parent->NewTrain();
-		}
-		//应用训练样本(随机梯度下降)
-		bool EndTrain(int times, Net_F learningRate)
-		{
-			if (parent == nullptr)return true;
-			if (times == 0)return false;
-
-			a.clear();
-			da.clear();
-			a.resize(size);
-			da.resize(size);
-			for (int i = 0; i < w.size(); i++)
-			{
-				w[i] += wC[i] / times * learningRate;
-				wC[i] = 0;
-			}
-			for (int i = 0; i < b.size(); i++)
-			{
-				b[i] += bC[i] / times * learningRate;
-				bC[i] = 0;
-			}
-			return parent->EndTrain(times, learningRate);
-		}
-	};
-
-	/******************************************************
-	* Network
-	* 神经网络
-	*
-	******************************************************/
-
-	void Train(vector<Layer>& layer, vector<Net_F>& output, int fun)
-	{
-#ifdef GPU
-		using namespace concurrency;
-
-		for (int i = layer.size() - 1; i > 0; i--)
-		{
-			array_view<Net_F, 1> temp(layer[i].Size());
-			//偏置(计算temp)
-			array_view<Net_F, 1> gpu_z(layer[i].Size(), layer[i].z);
-			array_view<Net_F, 1> gpu_a(layer[i].Size(), layer[i].a);
-			bool last = i == layer.size() - 1;
-			array_view<Net_F, 1> gpu_da_y(layer[i].Size(), last ? output : layer[i].da);
-			array_view<Net_F, 1> gpu_bC(layer[i].Size(), layer[i].bC);
-
-			parallel_for_each(
-				gpu_a.extent,
-				[=](index<1> idx) restrict(amp)
-				{
-					if (last)
-					{
-						temp[idx] = dAct(gpu_z[idx], fun) * 2 * (gpu_a[idx] - gpu_da_y[idx]);
-					}
-					else
-					{
-						temp[idx] = dAct(gpu_z[idx], fun) * 2 * gpu_da_y[idx];
-					}
-					gpu_bC[idx] -= temp[idx];
-				}
-			);
-			gpu_bC.synchronize();
-
-			//权重
-			array_view<Net_F, 1> gpu_pa(layer[i - 1].Size(), layer[i - 1].a);
-			array_view<Net_F, 2> gpu_wC(layer[i].Size(), layer[i - 1].Size(), layer[i].wC);
-
-			parallel_for_each(
-				gpu_wC.extent,
-				[=](index<2> idx) restrict(amp)
-				{
-					gpu_wC[idx] -= gpu_pa[idx[1]] * temp[idx[0]];
-				}
-			);
-			gpu_wC.synchronize();
-
-			//上一层(da)
-			array_view<Net_F, 2> gpu_w(layer[i].Size(), layer[i - 1].Size(), layer[i].w);
-			array_view<Net_F, 1> gpu_parent_a(layer[i - 1].Size(), layer[i - 1].a);
-
-			parallel_for_each(
-				gpu_w.extent,
-				[=](index<2> idx) restrict(amp)
-				{
-					gpu_da_y[idx[1]] += gpu_w[idx] * temp[idx[0]];
-				}
-			);
-		}
-#endif
-	}
-
-	class Network
-	{
-	private:
-		int fun;
-
-	public:
-		vector<Layer> layer;
-		int times;		//训练次数
-		Net_F times_h;	//训练次数(累计)
-
-		//初始化(sizes: 各层的节点数, _fun: 激活函数)
-		void Init(vector<int> size, int _fun = 0)
-		{
-			fun = _fun;
-			layer.resize(size.size());
-			for (int i = 0; i < size.size(); i++)
-			{
-				layer[i].Init(size[i], _fun, i > 0 ? &layer[i - 1] : nullptr);
-			}
-		}
-
-		//获取输出
-		bool Work(vector<Net_F> input, vector<Net_F>* output = nullptr)
-		{
-			if (input.size() != layer[0].Size())
-			{
-				return false;
-			}
-			layer[0].a = input;
-			for (int i = 0; i < layer.size(); i++)
-			{
-				layer[i].Work();
-			}
-
-			if (output != nullptr)
-			{
-				output->resize(layer[layer.size() - 1].Size());
-				for (int i = 0; i < layer[layer.size() - 1].Size(); i++)
-				{
-					(*output)[i] = layer[layer.size() - 1].a[i];
-				}
-			}
-			return true;
-		}
-
-		//学习新的训练样本
-		bool NewTrain(vector<Net_F> output)
-		{
-#ifndef GPU
-			if (output.size() != layer[layer.size() - 1].Size())
-			{
-				return false;
-			}
-			layer[layer.size() - 1].NewTrain(output);
-#else
-			Train(layer, output, fun);
-#endif
-			times++;
-			times_h++;
-			return true;
-		}
-		//应用训练样本
-		bool EndTrain(Net_F learningRate)
-		{
-			bool res = layer[layer.size() - 1].EndTrain(times, learningRate);
-			times = 0;
 			return res;
 		}
 
-		//保存到文件
-		bool Save(const char* filename)
+		//反向传播（返回上一层各项的偏导）
+		Vector learn(const Vector& input, const Vector& da)
 		{
-			FILE* f;
-			fopen_s(&f, filename, "w");
-			if (f == NULL)return false;
-
-			//数据类型
-			fprintf_s(f, "Data_type: Network\n");
-			//使用的激活函数
-			fprintf_s(f, "Activation_function: ");
-			switch (fun)
+			Vector res(last_size);
+			for (size_t i = 0; i < size(); i++)
 			{
-			case SIGMOID: fprintf_s(f, "Sigmoid\n"); break;
-			case TANH: fprintf_s(f, "Tanh\n"); break;
-			case RELU: fprintf_s(f, "ReLU\n"); break;
-			case LRELU: fprintf_s(f, "LReLU\n"); break;
-			}
-			//层数
-			fprintf_s(f, "Layers: %zu\n", layer.size());
-			//训练次数
-			fprintf_s(f, "Training_times: %g\n", times_h);
+				Math_F temp = dAct(z[i], fun) * da.get(i);
 
-			//各个层
-			for (int i = 0; i < layer.size(); i++)
-			{
-				fprintf_s(f, "\nLayer: %d\n", i);
-				//节点数
-				fprintf_s(f, "Nodes: %d\n", layer[i].Size());
-				//激活值
-				for (int j = 0; j < layer[i].Size(); j++)
+				for (size_t j = 0; j < last_size; j++)
 				{
-					fprintf_s(f, "a%d: %g\n", j, layer[i].a[j]);
+					wC(i, j) -= input.get(j) * temp;
+					res[j] += w(i, j) * temp;
 				}
-				//权重
-				if (i > 0)
-				{
-					for (int j = 0; j < layer[i].Size(); j++)
-					{
-						for (int k = 0; k < layer[i - 1].Size(); k++)
-						{
-							fprintf_s(f, "w%d_%d: %g\n", j, k, layer[i].w[j * layer[i - 1].Size() + k]);
-						}
-					}
-					//偏置
-					for (int j = 0; j < layer[i].Size(); j++)
-					{
-						fprintf_s(f, "b%d: %g\n", j, layer[i].b[j]);
-					}
-				}
+				bC[i] -= temp;
 			}
-			fclose(f);
-			return true;
+			times++;
+			return res;
 		}
-		//从文件读取
-		bool Load(const char* filename)
+
+		//梯度下降
+		//l_rate：学习率；l_max：梯度修剪，-1为无限制
+		void end_learn(const Math_F l_rate, const Math_F l_max = -1)
 		{
-			FILE* f;
-			fopen_s(&f, filename, "r");
-			if (f == NULL)return false;
-
-			char temp[100];
-			size_t size;
-
-			//数据类型
-			fscanf_s(f, "%s", temp, sizeof(temp));
-			fscanf_s(f, "%s", temp, sizeof(temp));
-			if (strcmp(temp, "Network") != 0)return false;
-			//使用的激活函数
-			fscanf_s(f, "%s", temp, sizeof(temp));
-			fscanf_s(f, "%s", temp, sizeof(temp));
-
-			if (strcmp(temp, "Sigmoid") == 0)fun = SIGMOID;
-			else if (strcmp(temp, "Tanh") == 0)fun = TANH;
-			else if (strcmp(temp, "ReLU") == 0)fun = RELU;
-			else if (strcmp(temp, "LReLU") == 0)fun = LRELU;
-			//层数
-			fscanf_s(f, "%s %zu", temp, sizeof(temp), &size);
-			layer.resize(size);
-			//训练次数
-			fscanf_s(f, "%s %g", temp, sizeof(temp), &times_h);
-			//各个层
-			for (int i = 0; i < layer.size(); i++)
+			if (l_max != -1)
 			{
-				fscanf_s(f, "%s %s", temp, sizeof(temp), temp, sizeof(temp));
-				//节点数
-				fscanf_s(f, "%s %d", temp, sizeof(temp), &size);
-				layer[i].Init(size, fun, i > 0 ? &layer[i - 1] : nullptr);
-				//激活值
-				for (int j = 0; j < layer[i].Size(); j++)
+				wC.max_limit(l_max);
+				bC.max_limit(l_max);
+			}
+			if (times != 0)
+			{
+				w += wC / times * l_rate;
+				b += bC / times * l_rate;
+
+				wC.fill(0);
+				bC.fill(0);
+				times = 0;
+			}
+		}
+	};
+
+	/*****************************************************************************
+	* Fnn
+	* 全连接神经网络
+	*
+	*****************************************************************************/
+
+	class Fnn
+	{
+	private:
+		Math_F h_times = 0;	//累计训练次数
+		size_t times = 0;	//训练次数
+
+	public:
+		vector<FnnLayer> layer;
+
+		//获取大小
+		size_t size()
+		{
+			return layer.size();
+		}
+		//获取训练次数
+		size_t get_times()
+		{
+			return times;
+		}
+		//获取累计训练次数
+		size_t get_h_times()
+		{
+			return h_times;
+		}
+
+		//添加层
+		void add_layer(size_t size, int fun)
+		{
+			if (layer.empty())
+			{
+				layer.push_back(FnnLayer(size, 0, fun));
+			}
+			else
+			{
+				layer.push_back(FnnLayer(size, layer[layer.size() - 1].size(), fun));
+			}
+		}
+
+		//正向传播
+		Vector work(const Vector& input)
+		{
+			if (layer.empty())return Vector();
+
+			layer[0].a = input;
+			for (size_t i = 1; i < size(); i++)
+			{
+				layer[i].work(layer[i - 1].a);
+			}
+
+			return layer.back().a;
+		}
+		Vector work(const vector<Math_F>& input)
+		{
+			return work((Vector)input);
+		}
+
+		//反向传播（返回代价）
+		Math_F learn(const Vector& correct)
+		{
+			if (layer.size() < 2)return INFINITY;
+			if (correct.size() != layer.back().size())return INFINITY;
+
+			Vector da = layer.back().learn(layer[size() - 2].a, layer.back().get_da(correct));
+			for (size_t i = size() - 2; i > 0; i--)
+			{
+				da = layer[i].learn(layer[i - 1].a, da);
+			}
+			h_times += 1;
+			times++;
+
+			Vector cost = correct - layer.back().a;
+			return (cost * cost).sum();
+		}
+		Math_F learn(const vector<Math_F>& correct)
+		{
+			return learn((Vector)correct);
+		}
+
+		//梯度下降
+		void end_learn(const Math_F l_rate, const Math_F l_max = -1)
+		{
+			for (size_t i = size() - 1; i > 0; i--)
+			{
+				layer[i].end_learn(l_rate, l_max);
+			}
+			times = 0;
+		}
+
+		//保存
+		bool save(const char filename[])
+		{
+			File f;
+			bool res = f.open(filename, WRITE);
+			if (!res)return false;
+
+			//层数、h_times、times
+			size_t size = layer.size();
+			f.write(&size, sizeof(size_t));
+			f.write(&h_times, sizeof(Math_F));
+			f.write(&times, sizeof(size_t));
+
+			//每层节点数、激活函数
+			size_t size2;
+			for (size_t i = 0; i < size; i++)
+			{
+				size2 = layer[i].size();
+				f.write(&size2, sizeof(size_t));
+				f.write(&layer[i].fun, sizeof(int));
+			}
+
+			//每层
+			for (size_t i = 0; i < size; i++)
+			{
+				//训练次数
+				f.write(&layer[i].times, sizeof(size_t));
+				//参数
+				auto z = layer[i].z.get_arr_c();
+				for (auto j : z)f.write(&j, sizeof(j));
+
+				auto a = layer[i].a.get_arr_c();
+				for (auto j : a)f.write(&j, sizeof(j));
+
+				auto w = layer[i].w.get_arr_c();
+				for (auto j : w)f.write(&j, sizeof(j));
+
+				auto b = layer[i].b.get_arr_c();
+				for (auto j : b)f.write(&j, sizeof(j));
+				//改变值
+				auto wC = layer[i].wC.get_arr_c();
+				for (auto j : wC)f.write(&j, sizeof(j));
+
+				auto bC = layer[i].bC.get_arr_c();
+				for (auto j : bC)f.write(&j, sizeof(j));
+			}
+
+			f.close();
+		}
+
+		//加载
+		bool load(const char filename[])
+		{
+			File f;
+			bool res = f.open(filename, READ);
+			if (!res)return false;
+
+			//层数、h_times、times
+			size_t size;
+			f.read(&size, sizeof(size_t));
+			f.read(&h_times, sizeof(Math_F));
+			f.read(&times, sizeof(size_t));
+
+			//每层节点数、激活函数
+			size_t size2;
+			int fun;
+			layer.clear();
+			for (size_t i = 0; i < size; i++)
+			{
+				f.read(&size2, sizeof(size_t));
+				f.read(&fun, sizeof(int));
+				add_layer(size2, fun);
+			}
+
+			//每层
+			Math_F temp;
+			for (size_t i = 0; i < size; i++)
+			{
+				//训练次数
+				f.read(&layer[i].times, sizeof(size_t));
+				//参数
+				auto z = layer[i].z.get_arr();
+				for (size_t j = 0; j < z->size();j++)
 				{
-					fscanf_s(f, "%s", temp, sizeof(temp));
-					fscanf_s(f, "%g", &layer[i].a[j]);
+					f.read(&temp, sizeof(Math_F));
+					(*z)[j] = temp;
 				}
-				//权重
-				if (i > 0)
+
+				auto a = layer[i].a.get_arr();
+				for (size_t j = 0; j < a->size(); j++)
 				{
-					for (int j = 0; j < layer[i].Size(); j++)
-					{
-						for (int k = 0; k < layer[i - 1].Size(); k++)
-						{
-							fscanf_s(f, "%s", temp, sizeof(temp));
-							fscanf_s(f, "%g", &layer[i].w[j * layer[i - 1].Size() + k]);
-						}
-					}
-					//偏置
-					for (int j = 0; j < layer[i].Size(); j++)
-					{
-						fscanf_s(f, "%s", temp, sizeof(temp));
-						fscanf_s(f, "%g", &layer[i].b[j]);
-					}
+					f.read(&temp, sizeof(Math_F));
+					(*a)[j] = temp;
+				}
+
+				auto w = layer[i].w.get_arr();
+				for (size_t j = 0; j < w->size(); j++)
+				{
+					f.read(&temp, sizeof(Math_F));
+					(*w)[j] = temp;
+				}
+
+				auto b = layer[i].b.get_arr();
+				for (size_t j = 0; j < b->size(); j++)
+				{
+					f.read(&temp, sizeof(Math_F));
+					(*b)[j] = temp;
+				}
+				//改变值
+				auto wC = layer[i].wC.get_arr();
+				for (size_t j = 0; j < wC->size(); j++)
+				{
+					f.read(&temp, sizeof(Math_F));
+					(*wC)[j] = temp;
+				}
+
+				auto bC = layer[i].bC.get_arr();
+				for (size_t j = 0; j < bC->size(); j++)
+				{
+					f.read(&temp, sizeof(Math_F));
+					(*bC)[j] = temp;
 				}
 			}
-			fclose(f);
-			return true;
+
+			f.close();
 		}
 	};
 }
