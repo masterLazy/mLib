@@ -1,35 +1,60 @@
-﻿/******************************************************
+﻿/*****************************************************************************
 * mGraphics.cpp
 * 绘图
-* 
+*
 * 基于Direct2D
-******************************************************/
+*****************************************************************************/
 
 #include "mGraphics.h"
 
-/******************************************************
+using namespace mlib;
+
+D2D1_COLOR_F Graphics::color(COLORREF color, float alpha)
+{
+	float r = (float)GetRValue(color) / 255;
+	float g = (float)GetGValue(color) / 255;
+	float b = (float)GetBValue(color) / 255;
+
+	return D2D1::ColorF(r, g, b, alpha);
+}
+D2D1_COLOR_F Graphics::color(int _r, int _g, int _b, float alpha)
+{
+	float r = (float)_r / 255;
+	float g = (float)_g / 255;
+	float b = (float)_b / 255;
+
+	return D2D1::ColorF(r, g, b, alpha);
+}
+
+/*****************************************************************************
 * 画笔
 *
-******************************************************/
+*****************************************************************************/
 
 Brush_t* Graphics::brush(int r, int g, int b, float alpha)
 {
 	ID2D1SolidColorBrush* temp;
-	pRenderTarget->CreateSolidColorBrush(Color(r, g, b, alpha), &temp);
+	pRenderTarget->CreateSolidColorBrush(color(r, g, b, alpha), &temp);
 	return temp;
 }
-Brush_t* Graphics::brush(float r, float g, float b, float alpha)
+Brush_t* Graphics::brush(COLORREF _color, float alpha)
+{
+	ID2D1SolidColorBrush* temp;
+	pRenderTarget->CreateSolidColorBrush(color(_color, alpha), &temp);
+	return temp;
+}
+Brush_t* Graphics::brush_f(float r, float g, float b, float alpha)
 {
 	ID2D1SolidColorBrush* temp;
 	pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(r, g, b, alpha), &temp);
 	return temp;
 }
 
-/******************************************************
+/*****************************************************************************
 * Geometry
 * 几何图形
 *
-******************************************************/
+*****************************************************************************/
 
 Geometry::Geometry()
 {
@@ -47,7 +72,7 @@ bool Geometry::init(Graphics& gfx)
 	HRESULT res;
 	//创建路径几何图形
 	res = gfx.pFactory->CreatePathGeometry(&pPathGeometry);
-	if (res != S_OK)return false;
+	if (!SUCCEEDED(res))return false;
 	return true;
 }
 
@@ -65,7 +90,7 @@ bool Geometry::begin_def()
 	HRESULT res;
 	//绑定几何图形接收器
 	res = pPathGeometry->Open(&pSink);
-	if (res != S_OK)return false;
+	if (!SUCCEEDED(res))return false;
 
 	pSink->SetFillMode(D2D1_FILL_MODE::D2D1_FILL_MODE_WINDING);
 	return true;
@@ -117,67 +142,19 @@ void Geometry::add_arc(float x, float y, float r, bool neg, bool large)
 	));
 }
 
-/******************************************************
-* Bitmap
-* 位图
+/*****************************************************************************
+* 类主体
 *
-******************************************************/
-
-Bitmap::Bitmap()
-{
-	pBitmap = nullptr;
-}
-Bitmap::~Bitmap()
-{
-	if (pBitmap != nullptr)pBitmap->Release();
-}
-
-bool Bitmap::init(Graphics& gfx, const COLORREF arr[], int width, int height)
-{
-	//设置位图属性(32bit,无alpha)
-	gfx.pRenderTarget->GetDpi(&properties.dpiX, &properties.dpiY);
-	properties.pixelFormat.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-	properties.pixelFormat.alphaMode = D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE;
-
-	//创建位图
-	HRESULT res = gfx.pRenderTarget->CreateBitmap(D2D1::SizeU(width, height), arr, (UINT32)width * sizeof(COLORREF), &properties, &pBitmap);
-	if (res != S_OK)return false;
-
-	return true;
-}
-
-void Bitmap::draw(Graphics& gfx, float x, float y, float width, float height, float alpha)
-{
-	gfx.pRenderTarget->DrawBitmap(pBitmap, D2D1::RectF(x, y, width, height), alpha);
-}
-
-/******************************************************
-* 主类
-*
-******************************************************/
-
-D2D1_COLOR_F Graphics::color(COLORREF color, float alpha)
-{
-	float r = (float)GetRValue(color) / 255;
-	float g = (float)GetGValue(color) / 255;
-	float b = (float)GetBValue(color) / 255;
-
-	return D2D1::ColorF(r, g, b, alpha);
-}
-D2D1_COLOR_F Graphics::color(int _r, int _g, int _b, float alpha)
-{
-	float r = (float)_r / 255;
-	float g = (float)_g / 255;
-	float b = (float)_b / 255;
-
-	return D2D1::ColorF(r, g, b, alpha);
-}
+*****************************************************************************/
 
 Graphics::Graphics()
 {
 	pFactory = nullptr;
 	pRenderTarget = nullptr;
 	pWriteFactory = nullptr;
+	hWnd = NULL;
+	mode = 0;
+	trans = D2D1::Matrix3x2F::Translation(0, 0);
 }
 Graphics::~Graphics()
 {
@@ -186,23 +163,32 @@ Graphics::~Graphics()
 	if (pRenderTarget != nullptr)pWriteFactory->Release();
 }
 
-bool Graphics::init(HWND hWnd)
+bool Graphics::init(HWND _hWnd)
 {
+	if (pFactory != nullptr)pFactory->Release();
+	if (pRenderTarget != nullptr)pRenderTarget->Release();
+	if (pRenderTarget != nullptr)pWriteFactory->Release();
+
+	mode = 1;
+	hWnd = _hWnd;
+
 	HRESULT res;
 
 	//创建ID2D1Factory
 	res = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_SINGLE_THREADED,//设置为单线程
 		&pFactory);
-	if (res != S_OK)return false;
+	if (!SUCCEEDED(res))return false;
 
 	//创建ID2D1HwndRenderTarget
 	RECT rect;
 	GetClientRect(hWnd, &rect);
 
-	res = pFactory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(),
+	res = pFactory->CreateHwndRenderTarget(
+		D2D1::RenderTargetProperties(),
 		D2D1::HwndRenderTargetProperties(hWnd, D2D1::SizeU(rect.right, rect.bottom)),
-		&pRenderTarget);
-	if (res != S_OK)return false;
+		(ID2D1HwndRenderTarget**)&pRenderTarget
+	);
+	if (!SUCCEEDED(res))return false;
 
 	//创建ID2D1WriteFactory
 	res = DWriteCreateFactory(
@@ -210,39 +196,120 @@ bool Graphics::init(HWND hWnd)
 		__uuidof(IDWriteFactory),
 		(IUnknown**)&pWriteFactory
 	);
-	if (res != S_OK)return false;
+	if (!SUCCEEDED(res))return false;
+
+	return true;
+}
+bool Graphics::init(const Image& _img)
+{
+	if (pFactory != nullptr)pFactory->Release();
+	if (pRenderTarget != nullptr)pRenderTarget->Release();
+	if (pRenderTarget != nullptr)pWriteFactory->Release();
+
+	mode = 2;
+	img = _img;
+
+	HRESULT res;
+
+	//创建ID2D1Factory
+	res = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_SINGLE_THREADED,//设置为单线程
+		&pFactory);
+	if (!SUCCEEDED(res))return false;
+
+	//创建ID2D1HwndRenderTarget
+	res = pFactory->CreateWicBitmapRenderTarget(
+		img.pBitmap,
+		D2D1::RenderTargetProperties(),
+		&pRenderTarget
+	);
+	if (!SUCCEEDED(res))return false;
+
+	//创建ID2D1WriteFactory
+	res = DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		(IUnknown**)&pWriteFactory
+	);
+	if (!SUCCEEDED(res))return false;
 
 	return true;
 }
 
-void Graphics::begin_draw()
+bool Graphics::begin_draw()
 {
+	if (mode == 0)return false;
 	pRenderTarget->BeginDraw();
+	return true;
 }
-void Graphics::end_draw()
+bool Graphics::end_draw()
 {
-	pRenderTarget->EndDraw();
+	return SUCCEEDED(pRenderTarget->EndDraw());
 }
 
-bool Graphics::resize(HWND hWnd)
+bool Graphics::resize(UINT32 width, UINT32 height)
 {
 	if (pFactory == nullptr)return false;
 	if (pRenderTarget != nullptr)pRenderTarget->Release();
 
 	RECT rect;
-	GetClientRect(hWnd, &rect);
+	if (width == AUTO || height == AUTO)
+	{
+		if (mode == 1)
+		{
+			GetClientRect(hWnd, &rect);
+		}
+		else if (mode == 2)
+		{
+			rect.right = img.get_width();
+			rect.bottom = img.get_height();
+		}
+	}
+	else
+	{
+		rect.right = width;
+		rect.bottom = height;
+	}
 
-	HRESULT res = pFactory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(),
+	HRESULT res = pFactory->CreateHwndRenderTarget(
+		D2D1::RenderTargetProperties(),
 		D2D1::HwndRenderTargetProperties(hWnd, D2D1::SizeU(rect.right, rect.bottom)),
-		&pRenderTarget);
-	if (res != S_OK)return false;
+		(ID2D1HwndRenderTarget**)&pRenderTarget
+	);
+	if (!SUCCEEDED(res))return false;
 
 	return true;
 }
 
-void Graphics::clear(COLORREF color)
+void Graphics::clear(COLORREF _color)
 {
-	pRenderTarget->Clear(Color(color));
+	pRenderTarget->Clear(color(_color));
+}
+
+void Graphics::trans_rotate(float x, float y, float angle)
+{
+	trans = trans * D2D1::Matrix3x2F::Rotation(
+		angle,
+		D2D1::Point2F(x, y));
+	pRenderTarget->SetTransform(trans);
+}
+void Graphics::trans_scale(float x, float y, float rateX, float rateY)
+{
+	if (rateY == AUTO)rateY = rateX;
+
+	trans = trans * D2D1::Matrix3x2F::Scale(
+		D2D1::Size(rateX, rateY),
+		D2D1::Point2F(x, y));
+	pRenderTarget->SetTransform(trans);
+}
+void Graphics::trans_shift(float x, float y)
+{
+	trans = trans * D2D1::Matrix3x2F::Translation(x, y);
+	pRenderTarget->SetTransform(trans);
+}
+void Graphics::trans_clear()
+{
+	trans = D2D1::Matrix3x2F::Translation(0, 0);
+	pRenderTarget->SetTransform(trans);
 }
 
 bool Graphics::draw_text(float x, float y, const wchar_t str[], Brush_t* brush, Font font)
@@ -258,14 +325,14 @@ bool Graphics::draw_text(float x, float y, const wchar_t str[], Brush_t* brush, 
 		L"zh-cn",
 		&textFormat
 	);
-	if (res != S_OK)return false;
+	if (!SUCCEEDED(res))return false;
 
 	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
-	pRenderTarget->DrawTextW(str, wcslen(str), textFormat, D2D1::RectF(x, y, renderTargetSize.width, renderTargetSize.height), brush);
+	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(x, y, renderTargetSize.width, renderTargetSize.height), brush);
 
 	return true;
 }
-bool Graphics::draw_c_text(float midX, float y, const wchar_t str[], Brush_t* brush, Font font)
+bool Graphics::draw_text_c(float midX, float y, const wchar_t str[], Brush_t* brush, Font font)
 {
 	float width = 0;
 	for (int i = 0; i < wcslen(str); i++)
@@ -321,4 +388,36 @@ void Graphics::draw_circle(float x, float y, float r, Brush_t* brush, float line
 void Graphics::fill_circle(float x, float y, float r, Brush_t* brush)
 {
 	return fill_ellipse(x, y, r, r, brush);
+}
+
+bool Graphics::draw_image(const Image& img, float x, float y, float width, float height, float angle, float alpha)
+{
+	if (img.pBitmap == nullptr)return false;
+
+	if (width == AUTO || height == AUTO)
+	{
+		width = img.get_width();
+		height = img.get_height();
+	}
+
+	D2D1_POINT_2F pt = trans.TransformPoint(D2D1::Point2F(x + width / 2, y + height / 2));
+	trans_rotate(pt.x, pt.y, angle);
+
+	ID2D1Bitmap* pBitmap;
+	HRESULT res = pRenderTarget->CreateBitmapFromWicBitmap(
+		img.pBitmap,
+		NULL,
+		&pBitmap
+	);
+	if (!SUCCEEDED(res))return false;
+
+	pRenderTarget->DrawBitmap(pBitmap, D2D1::RectF(x, y, x + width, y + height), alpha);
+
+	pBitmap->Release();
+	trans_rotate(pt.x, pt.y, -angle);
+	return true;
+}
+bool Graphics::draw_image_s(const Image& img, float x, float y, float scale, float angle, float alpha)
+{
+	return draw_image(img, x, y, scale * img.get_width(), scale * img.get_height(), angle, alpha);
 }
