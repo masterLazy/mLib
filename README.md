@@ -3,7 +3,7 @@
 
 要想使用 mLib，您需要安装 Visual C++，因为部分代码使用了这些技术。如果您使用 Visual Studio 进行开发，则不需要额外安装任何项。除 mFunction、mGraphics 和 mNetwork 外，代码只需要标准 C++ 即可运行和使用。
 
-目前以及计划它包括：
+目前它包括：
 ## 1. mFunction.h
 本意是函数集，但是也有少部分的类等。总之集合了各种功能。
 ## 2. mGraphics.h，mGraphics.cpp
