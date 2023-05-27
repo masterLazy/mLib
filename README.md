@@ -10,7 +10,7 @@
 基于Direct2D的绘图。
 1. mMath/image.h，图片操作（相对独立）。
 ## 3. mMath.h
-数学
+数学。
 1. mMath/geometry.h，几何。
 2. mMath/algebra.h，代数。
 3. mMath/num.h，仿 Numpy 的多维数组。
