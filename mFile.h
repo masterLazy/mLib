@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include "mFunction.h"
-#include "mCode.h"
+ //#include "mCode.h"
 
 #undef min
 #undef max
@@ -30,7 +30,7 @@ namespace mlib
 	class File
 	{
 	private:
-		std::wstring dir;
+		std::wstring dir = L"";
 		std::wstring name;
 
 	public:
@@ -137,19 +137,41 @@ namespace mlib
 			memset(buf, 0, bufSize);
 			return fread_s(buf, bufSize, elementSize, elementCount, file);
 		}
+		//从文件读取vector
+		template<typename Ty> void read(std::vector<Ty>& v)
+		{
+			unsigned size;
+			read(&size, sizeof(size), sizeof(unsigned), 1);
+			v.clear();
+			v.resize(size);
+			for (unsigned i = 0; i < size; i++)
+			{
+				read(&v[i], sizeof(v[i]), sizeof(Ty), 1);
+			}
+		}
 
 		//写入文件
-		size_t write(void* buf, size_t elementSize, size_t elementCount)
+		size_t write(const void* buf, size_t elementSize, size_t elementCount)
 		{
 			return fwrite(buf, elementSize, elementCount, file);
 		}
-		size_t write(std::string& buf)
+		size_t write(const std::string& buf)
 		{
 			return fwrite(buf.c_str(), sizeof(char), buf.size(), file);
 		}
-		size_t write(std::wstring& buf)
+		size_t write(const std::wstring& buf)
 		{
-			return fwrite(buf.c_str(), sizeof(wchar_t), buf.size(), file);
+			return write(WstrToStr(buf));
+		}
+		//写入vector到文件
+		template<typename Ty> void write(const std::vector<Ty>& v)
+		{
+			unsigned size = v.size();
+			write(&size, sizeof(unsigned), 1);
+			for (unsigned i = 0; i < size; i++)
+			{
+				write(&v[i], sizeof(Ty), 1);
+			}
 		}
 
 		//删除文件(且先关闭)
@@ -278,6 +300,36 @@ namespace mlib
 		static void find_all_file(std::vector<std::string>* files, std::vector<std::string>* dirs, std::string path = "\\")
 		{
 			find_file(files, dirs, "*", path);
+		}
+
+		//寻找目录及子目录下的所有文件(不设置_bef_path)
+		static void find_all_file(std::vector<std::wstring>* _files, std::wstring path = L"\\", std::wstring _bef_path = L"")
+		{
+			std::vector<std::wstring> dirs;
+			std::vector<std::wstring> files;
+			find_file(&files, &dirs, L"*", path);
+			for (size_t i = 0; i < files.size(); i++)
+			{
+				_files->push_back(_bef_path + files[i]);
+			}
+			for (size_t i = 0; i < dirs.size(); i++)
+			{
+				find_all_file(_files, path + dirs[i] + L"\\", _bef_path + dirs[i] + L"\\");
+			}
+		}
+		static void find_all_file(std::vector<std::string>* _files, std::string path = "\\", std::string _bef_path = "")
+		{
+			std::vector<std::string> dirs;
+			std::vector<std::string> files;
+			find_file(&files, &dirs, "*", path);
+			for (size_t i = 0; i < files.size(); i++)
+			{
+				_files->push_back(_bef_path + files[i]);
+			}
+			for (size_t i = 0; i < dirs.size(); i++)
+			{
+				find_all_file(_files, path + dirs[i] + "\\", _bef_path + dirs[i] + "\\");
+			}
 		}
 
 		//获取文件信息

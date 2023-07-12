@@ -7,9 +7,15 @@
 *****************************************************************************/
 
 #include <Windows.h>
+//#undef max
+//#undef min
+#include <windowsx.h>
 #include <d2d1.h>
 #include <d2d1_1.h>
 #include <dwrite.h>
+#include <vector>
+
+#include "mMath.h"
 
 #include "mGraphics/image.h"	//图像
 
@@ -24,10 +30,10 @@ namespace mlib
 	/*****************************************************************************
 	* Font
 	* 字体
-	*
 	*****************************************************************************/
 
 	//字体粗细
+#undef BLACK
 	enum class FontWeight
 	{
 		THIN = 100,
@@ -69,7 +75,6 @@ namespace mlib
 	/*****************************************************************************
 	* Graphics
 	* Graphics主类
-	*
 	*****************************************************************************/
 
 #define AUTO	-1
@@ -93,8 +98,8 @@ namespace mlib
 		//注意:需要用到gfx的函数,该项参数应为引用(Graphics &gfx),因为涉及gfx的操作可能会修改它的值.
 
 		/*****************************************************************************
+		* Brush_t
 		* 画笔
-		*
 		*****************************************************************************/
 
 		//创建纯色画笔
@@ -105,7 +110,6 @@ namespace mlib
 		/*****************************************************************************
 		* Geometry
 		* 几何图形
-		*
 		*****************************************************************************/
 
 		class Geometry
@@ -151,18 +155,27 @@ namespace mlib
 			void add_bezier(float x1, float y1, float x2, float y2, float x, float y);
 
 			//添加到(x,y)的圆弧,圆弧半径为r(r>=两点距离/2)
-			//neg:	是否为逆时针
+			//neg:		是否为逆时针
 			//large:	弧的角度是否>=180°
 			void add_arc(float x, float y, float r, bool neg = false, bool large = false);
 		};
 
 		/*****************************************************************************
 		* 类主体
-		*
 		*****************************************************************************/
+
+		int m_x, m_y;	//鼠标位置
+		int m_x0, m_y0; //鼠标按下后的初始位置
+		int m_dx, m_dy;	//鼠标自按下后移动的距离
+		int m_whl;		//鼠标滚轮滚动值
+		bool m_down;	//鼠标左键是否按下
 
 		Graphics();
 		~Graphics();
+
+
+		/*基本操作*/
+
 
 		//初始化：绘图到窗口
 		bool init(HWND hWnd);
@@ -181,6 +194,9 @@ namespace mlib
 		void clear(COLORREF color = RGB(0, 0, 0));
 
 
+		/*绘图空间*/
+
+
 		//旋转绘图空间
 		void trans_rotate(float x, float y, float angle);
 		//缩放绘图空间
@@ -191,9 +207,17 @@ namespace mlib
 		void trans_clear();
 
 
+		/*绘制图形*/
+
+
 		//绘制文本
-		bool draw_text(float x, float y, const wchar_t str[], Brush_t* brush, Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,20 });
-		bool draw_text_c(float midX, float y, const wchar_t str[], Brush_t* brush, Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,20 });
+		bool draw_text(float x, float y, const wchar_t str[], Brush_t* brush,
+			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
+		bool draw_text_c(float midX, float y, const wchar_t str[], Brush_t* brush,
+			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
+		//绘制文本(自动换行)
+		bool draw_text(float left, float top, float right, float bottom, const wchar_t str[], Brush_t* brush,
+			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
 
 		//绘制直线
 		void draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth = 1);
@@ -214,10 +238,36 @@ namespace mlib
 		void draw_circle(float x, float y, float r, Brush_t* brush, float lineWidth = 1);
 		void fill_circle(float x, float y, float r, Brush_t* brush);
 
+		//绘制多边形
+		void draw_polygon(std::vector<Point> pts, Brush_t* brush, float lineWidth = 1);
+		void fill_polygon(std::vector<Point> pts, Brush_t* brush);
+
 		//绘制图像
-		bool draw_image(const Image& img, float x, float y, float width = AUTO, float height = AUTO, float angle = 0, float alpha = 1);
-		bool draw_image_s(const Image& img, float x, float y, float scale = 1, float angle = 0, float alpha = 1);
+		//interpolation: 是否插值
+		bool draw_image(const Image& img, float x, float y, float width = AUTO, float height = AUTO,
+			float angle = 0, float alpha = 1, bool interpolation = true);
+		bool draw_image_s(const Image& img, float x, float y, float scale = 1, float angle = 0,
+			float alpha = 1, bool interpolation = true);
+
+
+		/*其他*/
+
+
+		//在 HWND 模式的自动操作
+		//使用方法在 WndProc() 中加入: if(gfx.proc(hWnd, message, wParam, lParam))return 0;
+		bool proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool no_erase = true);
+		/* 进行的操作包括:
+		* WM_CREATE			init()
+		* WM_SIZE			resize()
+		* WM_ERASEBKGND		return 0;
+		* WM_MOUSEMOVE
+		* WM_LBUTTONDOWN
+		* WM_LBUTTONUP
+		* WM_MOUSEWHEEL		设置和计算鼠标有关的变量
+		*/
 	};
 
 	typedef Graphics::Geometry Geometry;
 }
+
+#include "mGraphics/figure.h"	//科学绘图

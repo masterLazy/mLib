@@ -27,8 +27,8 @@ D2D1_COLOR_F Graphics::color(int _r, int _g, int _b, float alpha)
 }
 
 /*****************************************************************************
+* Brush_t
 * 画笔
-*
 *****************************************************************************/
 
 Brush_t* Graphics::brush(int r, int g, int b, float alpha)
@@ -53,7 +53,6 @@ Brush_t* Graphics::brush_f(float r, float g, float b, float alpha)
 /*****************************************************************************
 * Geometry
 * 几何图形
-*
 *****************************************************************************/
 
 Geometry::Geometry()
@@ -144,7 +143,6 @@ void Geometry::add_arc(float x, float y, float r, bool neg, bool large)
 
 /*****************************************************************************
 * 类主体
-*
 *****************************************************************************/
 
 Graphics::Graphics()
@@ -270,9 +268,11 @@ bool Graphics::resize(UINT32 width, UINT32 height)
 		rect.bottom = height;
 	}
 
+	width = rect.right;
+	height = rect.bottom;
 	HRESULT res = pFactory->CreateHwndRenderTarget(
 		D2D1::RenderTargetProperties(),
-		D2D1::HwndRenderTargetProperties(hWnd, D2D1::SizeU(rect.right, rect.bottom)),
+		D2D1::HwndRenderTargetProperties(hWnd, D2D1::SizeU(width, height)),
 		(ID2D1HwndRenderTarget**)&pRenderTarget
 	);
 	if (!SUCCEEDED(res))return false;
@@ -328,7 +328,7 @@ bool Graphics::draw_text(float x, float y, const wchar_t str[], Brush_t* brush, 
 	if (!SUCCEEDED(res))return false;
 
 	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
-	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(x, y, renderTargetSize.width, renderTargetSize.height), brush);
+	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(x, y, 1e10, 1e10), brush);
 
 	return true;
 }
@@ -347,6 +347,26 @@ bool Graphics::draw_text_c(float midX, float y, const wchar_t str[], Brush_t* br
 		}
 	}
 	return draw_text(midX - width * font.size / 2, y, str, brush, font);
+}
+bool Graphics::draw_text(float left, float top, float right, float bottom, const wchar_t str[], Brush_t* brush, Font font)
+{
+	IDWriteTextFormat* textFormat;
+	HRESULT res = pWriteFactory->CreateTextFormat(
+		font.szFontName,
+		NULL,
+		(DWRITE_FONT_WEIGHT)font.weight,
+		(DWRITE_FONT_STYLE)font.style,
+		DWRITE_FONT_STRETCH_NORMAL,
+		font.size,
+		L"zh-cn",
+		&textFormat
+	);
+	if (!SUCCEEDED(res))return false;
+
+	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
+	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(left, top, right, bottom), brush);
+
+	return true;
 }
 
 void Graphics::draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth)
@@ -390,7 +410,38 @@ void Graphics::fill_circle(float x, float y, float r, Brush_t* brush)
 	return fill_ellipse(x, y, r, r, brush);
 }
 
-bool Graphics::draw_image(const Image& img, float x, float y, float width, float height, float angle, float alpha)
+void Graphics::draw_polygon(std::vector<Point> pts, Brush_t* brush, float lineWidth)
+{
+	if (pts.size() < 2)return;
+	Geometry gmt;
+	gmt.init(*this);
+	gmt.begin_def();
+	gmt.begin(pts[0].x, pts[0].y);
+	for (size_t i = 1; i < pts.size(); i++)
+	{
+		gmt.add_line(pts[i].x, pts[i].y);
+	}
+	gmt.end();
+	gmt.end_def();
+	gmt.draw(*this, brush, lineWidth);
+}
+void Graphics::fill_polygon(std::vector<Point> pts, Brush_t* brush)
+{
+	if (pts.size() < 2)return;
+	Geometry gmt;
+	gmt.init(*this);
+	gmt.begin_def();
+	gmt.begin(pts[0].x, pts[0].y);
+	for (size_t i = 1; i < pts.size(); i++)
+	{
+		gmt.add_line(pts[i].x, pts[i].y);
+	}
+	gmt.end();
+	gmt.end_def();
+	gmt.fill(*this, brush);
+}
+
+bool Graphics::draw_image(const Image& img, float x, float y, float width, float height, float angle, float alpha, bool interpolation)
 {
 	if (img.pBitmap == nullptr)return false;
 
@@ -411,13 +462,59 @@ bool Graphics::draw_image(const Image& img, float x, float y, float width, float
 	);
 	if (!SUCCEEDED(res))return false;
 
-	pRenderTarget->DrawBitmap(pBitmap, D2D1::RectF(x, y, x + width, y + height), alpha);
+	pRenderTarget->DrawBitmap(pBitmap, D2D1::RectF(x, y, x + width, y + height), alpha,
+		(D2D1_BITMAP_INTERPOLATION_MODE)interpolation);
 
 	pBitmap->Release();
 	trans_rotate(pt.x, pt.y, -angle);
 	return true;
 }
-bool Graphics::draw_image_s(const Image& img, float x, float y, float scale, float angle, float alpha)
+bool Graphics::draw_image_s(const Image& img, float x, float y, float scale, float angle, float alpha, bool interpolation)
 {
-	return draw_image(img, x, y, scale * img.get_width(), scale * img.get_height(), angle, alpha);
+	return draw_image(img, x, y, scale * img.get_width(), scale * img.get_height(), angle, alpha, interpolation);
+}
+
+bool Graphics::proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool no_erase)
+{
+	//return true; 表示需要退出
+	m_whl = 0;
+	switch (message)
+	{
+	case WM_CREATE:
+		init(hWnd);
+		return false;
+
+	case WM_SIZE:
+		resize();
+		return false;
+
+	case WM_ERASEBKGND:
+		if (no_erase)return true;
+
+	case WM_MOUSEMOVE:
+		m_x = GET_X_LPARAM(lParam);
+		m_y = GET_Y_LPARAM(lParam);
+		if (m_down)
+		{
+			m_dx = m_x - m_x0;
+			m_dy = m_y - m_y0;
+		}
+		return false;
+
+	case WM_LBUTTONDOWN:
+		m_down = true;
+		m_x0 = m_x;
+		m_y0 = m_y;
+		return false;
+
+	case WM_LBUTTONUP:
+		m_down = false;
+		return false;
+
+	case WM_MOUSEWHEEL:
+		m_whl = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+		return false;
+
+	default: return false;
+	}
 }

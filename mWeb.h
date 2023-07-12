@@ -24,7 +24,7 @@
 #pragma comment(lib,"libssl.lib")
 #pragma comment(lib,"libcrypto.lib")
 
-using namespace std;
+using namespace std;//早晚把这句去掉
 
 namespace mlib
 {
@@ -34,7 +34,6 @@ namespace mlib
 	/*****************************************************************************
 	* HttpMsg
 	* HTTP报文
-	*
 	*****************************************************************************/
 
 	//从资源名获取数据类型
@@ -356,7 +355,7 @@ namespace mlib
 				char temp[20] = { 0 };
 				if (dataMode == 0)
 				{
-					_itoa_s(data.size(), temp, 20);
+					_itoa_s(data.size(), temp, 10);
 				}
 				else
 				{
@@ -370,7 +369,7 @@ namespace mlib
 					fseek(f, 0, SEEK_SET);
 					fclose(f);
 
-					_ltoa_s(fileSize, temp, 20);
+					_ltoa_s(fileSize, temp, 10);
 				}
 				set_header("Content-Length", temp);
 			}
@@ -416,7 +415,9 @@ namespace mlib
 		{
 			data = "<!DOCTYPE HTML><html><head><title>";
 			data += fline.substr(fline.find(" ") + 1);
-			data += "</title></head><body><center><h1>";
+			data += "</title><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/>";
+			data += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
+			data += "</head><body><center><h1>";
 			data += fline.substr(fline.find(" ") + 1);
 			data += "</h1><hr /><p>mLazy</p></center></body></html>";
 		}
@@ -450,8 +451,8 @@ namespace mlib
 #define HTTPS_PORT 443
 
 #define _USING_SOCK (mode == 1 ? sock : cli_sock)
-#define send_BUF_SIZE 1024
-#define recv_BUF_SIZE 2048
+#define SEND_BUF_SIZE 1024
+#define RECV_BUF_SIZE 2048
 	class Socket
 	{
 	private:
@@ -462,8 +463,12 @@ namespace mlib
 		SSL* ssl = nullptr;
 		bool recved = false;//已接收到SSL缓冲区
 
+		size_t file_size = 0;
+
 	public:
 		SOCKET sock;
+
+		float file_recv_progress = 0;
 
 		//关闭套接字
 		void close()
@@ -775,14 +780,14 @@ namespace mlib
 			}
 
 			_buf->clear();
-			char* buf = new char[recv_BUF_SIZE];
+			char* buf = new char[RECV_BUF_SIZE];
 			int res, err;
 			if (ssl == nullptr)
 			{
 				while (true)
 				{
-					memset(buf, 0, recv_BUF_SIZE);
-					res = ::recv(_USING_SOCK, buf, recv_BUF_SIZE - 1, NULL);
+					memset(buf, 0, RECV_BUF_SIZE);
+					res = ::recv(_USING_SOCK, buf, RECV_BUF_SIZE - 1, NULL);
 					if (res <= 0)
 					{
 						if (WSAGetLastError() == WSAEWOULDBLOCK)
@@ -799,8 +804,8 @@ namespace mlib
 				time_t timer = clock();
 				while (clock() - timer <= waitSec * 1000)
 				{
-					memset(buf, 0, recv_BUF_SIZE);
-					res = SSL_read(ssl, buf, recv_BUF_SIZE - 1);
+					memset(buf, 0, RECV_BUF_SIZE);
+					res = SSL_read(ssl, buf, RECV_BUF_SIZE - 1);
 					err = SSL_get_error(ssl, res);
 
 					if (err == SSL_ERROR_WANT_READ)
@@ -831,16 +836,16 @@ namespace mlib
 			fseek(f, 0, SEEK_SET);
 
 			//循环发送
-			char* _buf = new char[send_BUF_SIZE];
-			for (size_t i = 0; i < fileSize; i += send_BUF_SIZE)
+			char* _buf = new char[SEND_BUF_SIZE];
+			for (size_t i = 0; i < fileSize; i += SEND_BUF_SIZE)
 			{
 				//读取文件
-				memset(_buf, 0, send_BUF_SIZE);
-				fread(_buf, sizeof(char), send_BUF_SIZE, f);
+				memset(_buf, 0, SEND_BUF_SIZE);
+				fread(_buf, sizeof(char), SEND_BUF_SIZE, f);
 				//发送
-				if (i + send_BUF_SIZE < fileSize)
+				if (i + SEND_BUF_SIZE < fileSize)
 				{
-					res = send(_buf, send_BUF_SIZE, waitSec);
+					res = send(_buf, SEND_BUF_SIZE, waitSec);
 					if (res != 0)
 					{
 						delete[] _buf;
@@ -883,7 +888,7 @@ namespace mlib
 					filename = (string)root + _filename;
 
 					_itoa_s(i, temp, 10);
-					j = filename.find(".");
+					j = filename.find_last_of(".");
 					if (j == string::npos)
 					{
 						filename += '(';
@@ -913,16 +918,24 @@ namespace mlib
 			}
 
 			//循环接收
-			char* buf = new char[recv_BUF_SIZE];
+			char* buf = new char[RECV_BUF_SIZE];
+			file_recv_progress = 0;
+			size_t recved = 0;
 			while (true)
 			{
-				memset(buf, 0, recv_BUF_SIZE);
-				res = recv(buf, recv_BUF_SIZE, waitSec);
+				memset(buf, 0, RECV_BUF_SIZE);
+				res = recv(buf, RECV_BUF_SIZE, waitSec);
 				if (res <= 0)
 				{
 					break;
 				}
 				fwrite(buf, sizeof(char), res, f);
+
+				recved += res;
+				if (file_size != 0)
+				{
+					file_recv_progress = (float)recved / file_size;
+				}
 			}
 			delete[] buf;
 			fclose(f);
@@ -948,7 +961,8 @@ namespace mlib
 			return 0;
 		}
 		//接收HTTP报文(超过限定的接收到文件, -1表示无限制)
-		int recv(HttpMsg* msg, size_t max = 1024, string resourceName = "/", const char root[] = "recive\\", float waitSec = 3)
+		int recv(HttpMsg* msg, size_t _max = 1024, string resourceName = "/", const char root[] = "recive\\",
+			const char filename[] = "", float waitSec = 3)
 		{
 			if (mode == 0)return -1;
 
@@ -977,6 +991,7 @@ namespace mlib
 			if (msg->get_header("Content-Length") != "")
 			{
 				size_t size = atoi(msg->get_header("Content-Length").c_str());
+				file_size = size;
 				//multipart/form-data
 				if (msg->get_header("Content-Type") == "multipart/form-data")
 				{
@@ -987,14 +1002,14 @@ namespace mlib
 					bdy += _msg.substr(i, _msg.find("\r\n", i) - i);
 
 					//循环接收
-					char* ctemp = new char[recv_BUF_SIZE];
+					char* ctemp = new char[RECV_BUF_SIZE];
 					vector<char> _buf;
 					string temp, name, filename;
 					FILE* f = NULL;
 					while (true)
 					{
-						memset(ctemp, 0, recv_BUF_SIZE);
-						res = recv(ctemp, recv_BUF_SIZE, waitSec);
+						memset(ctemp, 0, RECV_BUF_SIZE);
+						res = recv(ctemp, RECV_BUF_SIZE, waitSec);
 						if (res == 0)
 						{
 							if (f != NULL)
@@ -1124,7 +1139,7 @@ namespace mlib
 					}
 				}
 				//限制以内报文
-				else if (max == -1 || size < max)
+				else if (_max == -1 || size < _max)
 				{
 					string temp;
 					res = recv(&temp, waitSec);
@@ -1155,13 +1170,21 @@ namespace mlib
 						resourceName += ".html";
 					}
 					//接收文件
-					return recv_file(resourceName.c_str(), root, waitSec);
+					if (filename[0] == '\0')
+					{
+						return recv_file(resourceName.c_str(), root, waitSec);
+					}
+					else
+					{
+						return recv_file(filename, root, waitSec);
+					}
 				}
 			}
 			//可恶，没给长度，硬着头皮收吧
 			else
 			{
-				if (max == 0)
+				file_size = 0;
+				if (_max == 0)
 				{
 					//生成文件名
 					if (resourceName == "/")resourceName = "index.html";
@@ -1175,6 +1198,7 @@ namespace mlib
 						}
 						else
 						{
+							if (resourceName.back() == '/')resourceName.pop_back();
 							resourceName = resourceName.substr(resourceName.find_last_of("/") + 1);
 						}
 					}
@@ -1184,7 +1208,14 @@ namespace mlib
 						resourceName += ".html";
 					}
 					//接收文件
-					return recv_file(resourceName.c_str(), root, waitSec);
+					if (filename[0] == '\0')
+					{
+						return recv_file(resourceName.c_str(), root, waitSec);
+					}
+					else
+					{
+						return recv_file(filename, root, waitSec);
+					}
 				}
 				string temp;
 				recv(&temp, waitSec);
@@ -1200,6 +1231,7 @@ namespace mlib
 	* 自动HTTP/HTTPS
 	*
 	* 2023.1.29：仅完成了客户端
+	* 2023.6.16：就这样吧
 	*****************************************************************************/
 
 	//从URL中解析主机名
@@ -1344,17 +1376,17 @@ namespace mlib
 			b = Uri_encode(b);
 
 			smsg.set_req(a + b + c);
-			smsg.set_header("connection", "keep-alive");
+			smsg.set_header("Connection", "keep-alive");
 			smsg.set_header("Host", host);
 			//用Edge的UA
 			smsg.set_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.70");
 			s.send(smsg, waitSec);
 
-			s.recv(&rmsg, -1, "", "", waitSec);
+			s.recv(&rmsg, -1, "", "", "", waitSec);
 			return rmsg.data;
 		}
 		//客户端：接收文件(返回-3表示302Found)
-		int GetFile(const string resourceName = "/", const string savePath = "recive\\", float waitSec = 3)
+		int GetFile(const string resourceName = "/", const string savePath = "recive\\", const string filename = "", float waitSec = 3)
 		{
 			//处理URI
 			string a, b, c;
@@ -1372,7 +1404,7 @@ namespace mlib
 			b = Uri_encode(b);
 
 			smsg.set_req(a + b + c);
-			smsg.set_header("connection", "keep-alive");
+			smsg.set_header("Connection", "keep-alive");
 			smsg.set_header("Host", host);
 			//用Edge的UA
 			smsg.set_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.70");
@@ -1381,7 +1413,7 @@ namespace mlib
 			res = s.send(smsg, waitSec);
 			if (res != 0)return res;
 
-			res = s.recv(&rmsg, 0, resourceName, savePath.c_str(), waitSec);
+			res = s.recv(&rmsg, 0, resourceName, savePath.c_str(), filename.c_str(), waitSec);
 			//302Found
 			if (rmsg.get_state() == 302)
 			{
@@ -1399,32 +1431,98 @@ namespace mlib
 
 	typedef Http Https;
 
-	class HttpClient
+	/*****************************************************************************
+	* easyWeb
+	* 简单的网络操作
+	*****************************************************************************/
+
+	class
 	{
-	private:
-		SSL* ssl;
-		Socket s;
-		string root;
-		string url;
 	public:
-		HttpMsg smsg, rmsg;
+		Https c;
 
-		~HttpClient()
+		//获取 Https 连接的资源
+		string get_https(const string url, float waitSec = 3)
 		{
-			s.close();
+			//初始化SSL
+			OpenSSL_add_ssl_algorithms();
+			SSL_load_error_strings();
+			SSLeay_add_ssl_algorithms();
+
+			//创建CTX
+			SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
+
+			//设置验证方式
+			SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+
+			//创建SSL
+			SSL* ssl = SSL_new(ctx);
+
+			//获取
+			c.init(ssl);
+
+			if (c.connect(GetHost(url).c_str()) != 0)
+			{
+				//cout << " Failed to connect: " << WSAGetLastError() << endl;
+				return "";
+			}
+
+			c.GetHtml(GetRes(url), waitSec);
+
+			auto msg = c.rmsg.make();
+			if (msg == "")
+			{
+				//cout << " Failed to get: " << WSAGetLastError() << endl;
+				return "";
+			}
+
+			//关闭并释放SSL
+			SSL_shutdown(ssl);
+			SSL_free(ssl);
+
+			//释放CTX
+			SSL_CTX_free(ctx);
+
+			return msg;
 		}
 
-		//初始化
-		void init(string savePath, SSL* _ssl = nullptr)
+		//下载 Https 连接的资源
+		bool download_https(const string url, const string savePath, const string filename = "", float waitSec = 3)
 		{
-			root = savePath;
-			ssl = _ssl;
+			//初始化SSL
+			OpenSSL_add_ssl_algorithms();
+			SSL_load_error_strings();
+			SSLeay_add_ssl_algorithms();
+
+			//创建CTX
+			SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
+
+			//设置验证方式
+			SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+
+			//创建SSL
+			SSL* ssl = SSL_new(ctx);
+
+			//获取
+			c.init(ssl);
+
+			if (c.connect(GetHost(url).c_str()) != 0)
+			{
+				//cout << " Failed to connect: " << WSAGetLastError() << endl;
+				return false;
+			}
+
+			c.GetFile(GetRes(url), savePath, filename, waitSec);
+
+			//关闭并释放SSL
+			SSL_shutdown(ssl);
+			SSL_free(ssl);
+
+			//释放CTX
+			SSL_CTX_free(ctx);
+
+			return true;
 		}
 
-		//获取资源（如是text类型就返回数据，否则保存到文件）
-		string Get(string url)
-		{
-
-		}
-	};
+	} easyWeb;
 }
