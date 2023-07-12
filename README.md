@@ -8,7 +8,8 @@
 本意是函数集，但是也有少部分的类等。总之集合了各种功能。
 ## 2. mGraphics.h，mGraphics.cpp
 基于Direct2D的绘图。
-1. mMath/image.h，图片操作（相对独立）。
+1. mGraphics/image.h，图片操作（相对独立）。
+2. mGraphics/figure.h，科学绘图。
 ## 3. mMath.h
 数学。
 1. mMath/geometry.h，几何。
