@@ -7,6 +7,7 @@
 *****************************************************************************/
 
 #include <wincodec.h>
+#include "../mFunction.h"
 
 namespace mlib
 {
@@ -284,6 +285,7 @@ namespace mlib
 			return true;
 		}
 		//从内存加载图像
+		//[x][y]->[x*height+y]
 		bool load_from_mem(const COLORREF buf[], UINT width, UINT height)
 		{
 			if (pBitmap != nullptr)pBitmap->Release();
@@ -297,9 +299,9 @@ namespace mlib
 			{
 				for (int y = 0; y < height; y++)
 				{
-					temp[(y * width + x) * 4 + 0] = GetRValue(buf[y * width + x]);
-					temp[(y * width + x) * 4 + 1] = GetGValue(buf[y * width + x]);
-					temp[(y * width + x) * 4 + 2] = GetBValue(buf[y * width + x]);
+					temp[(y * width + x) * 4 + 0] = GetRValue(buf[x * height + y]);
+					temp[(y * width + x) * 4 + 1] = GetGValue(buf[x * height + y]);
+					temp[(y * width + x) * 4 + 2] = GetBValue(buf[x * height + y]);
 				}
 			}
 
@@ -390,7 +392,7 @@ namespace mlib
 			{
 				for (size_t y = 0; y < mat.rows; y++)
 				{
-					//set(x, y, RGB(mat_(y, x)[0], mat_(y, x)[1], mat_(y, x)[2], ));
+					//input_setting(x, y, RGB(mat_(y, x)[0], mat_(y, x)[1], mat_(y, x)[2], ));
 					//写入
 					data[y * mat.cols * 4 + x * 4 + 2] = mat_(y, x)[0];
 					data[y * mat.cols * 4 + x * 4 + 1] = mat_(y, x)[1];
@@ -514,11 +516,26 @@ namespace mlib
 			return true;
 		}
 
-		//转为Matrix(灰度)(未优化)
-#ifdef MMATH_H
-		Matrix to_mat()
+		//转为vector(灰度)
+		std::vector<int> to_vec()
 		{
-			Matrix mat(get_height(), get_width());
+			std::vector<float> res(get_height() * get_width());
+			COLORREF color;
+			int r, g, b;
+			for (size_t x = 0; x < get_width(); x++)
+			{
+				for (size_t y = 0; y < get_height(); y++)
+				{
+					color = get(x, y);
+					SplitRgb(color, &r, &g, &b);
+					res[x * get_height() + y] = round((r + g + b) / 3.0);
+				}
+			}
+		}
+		//one: 是否归一化
+		std::vector<float> to_vec_f(bool one = false)
+		{
+			std::vector<float> res(get_height() * get_width());
 			COLORREF color;
 			float r, g, b;
 			for (size_t x = 0; x < get_width(); x++)
@@ -527,11 +544,11 @@ namespace mlib
 				{
 					color = get(x, y);
 					SplitRgb(color, &r, &g, &b);
-					mat(y, x) = (r + g + b) / 3 / 255;
+					res[x * get_height() + y] = (r + g + b) / 3;
+					if (one)res[x * get_height() + y] /= 255;
 				}
 			}
-			return mat;
+			return res;
 		}
-#endif
 	};
 }
