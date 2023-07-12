@@ -23,4 +23,4 @@
 ## 6. mDnn.h，mDnn.cpp
 神经网络（很 NB）。
 1. mNetwork/layers.h，神经网络层。
-2. mNetwork/AOLR.h，激活函数、优化器、损失函数、正则化方法
+2. mNetwork/AOLR.h，激活函数、优化器、损失函数、正则化方法。
