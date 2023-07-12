@@ -15,10 +15,12 @@
 2. mMath/algebra.h，代数。
 3. mMath/num.h，仿 Numpy 的多维数组。
 4. mMath/value.h，求值链，主要用来自动求导。
+5. mMath/numEx.h，高精度数字。
 ## 4. mWeb.h
 网络。
 ## 5. mCode.h
 编码（Base64，UTF-8，URI）。
-## 6. mNetwork.h
-神经网络（非常非常不建议使用）。
-1. mNetwork/fnn.h，全连接神经网络。
+## 6. mDnn.h，mDnn.cpp
+神经网络（很 NB）。
+1. mNetwork/layers.h，神经网络层。
+2. mNetwork/AOLR.h，激活函数、优化器、损失函数、正则化方法
