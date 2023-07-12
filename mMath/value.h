@@ -1,6 +1,6 @@
 #pragma once
 /*****************************************************************************
-* value
+* Value
 * 求值链(主要用于自动求导)
 *
 *****************************************************************************/
@@ -10,14 +10,17 @@ namespace mlib
 	class Value
 	{
 	private:
-		//运算关系(null 表示无运算, 即常量)
-		enum class Opt
+		//运算关系
+		enum class Optimizer
 		{
-			null, add, sub, mlt, div, pow, log, dvt
+			null,				//无运算，即常量
+			add, sub, mlt, div,	//+ - * /
+			pow, log,			//乘方，对数
+			dvt					//求导
 
 		};
 
-		Opt opt;			//运算关系
+		Optimizer opt;			//运算关系
 		Math_F rv;			//真实值
 		const Value* a, * b;//两个运算数
 
@@ -27,7 +30,7 @@ namespace mlib
 			//自身 
 			if (this == &x)return 1;
 			//非自身的常量
-			else if (opt == Opt::null)return 0;
+			else if (opt == Optimizer::null)return 0;
 
 			Math_F av = a->get();
 			Math_F bv = b->get();
@@ -36,13 +39,13 @@ namespace mlib
 
 			switch (opt)
 			{
-			case Opt::add:return da + db;
-			case Opt::sub:return da - db;
+			case Optimizer::add:return da + db;
+			case Optimizer::sub:return da - db;
 				//[f(x)g(x)]'=f'(x)g(x)+f(x)g'(x)
-			case Opt::mlt:return da * bv + av * db;
+			case Optimizer::mlt:return da * bv + av * db;
 				//[f(x)/g(x)]'=[f'(x)g(x)-f(x)g'(x)]/[g(x)]^2
-			case Opt::div:return (da * bv - av * db) / (bv * bv);
-			case Opt::pow:
+			case Optimizer::div:return (da * bv - av * db) / (bv * bv);
+			case Optimizer::pow:
 				if (av == 0)
 				{
 					return 0;
@@ -56,9 +59,10 @@ namespace mlib
 		}
 
 	public:
-		Value(Math_F x = 0)
+		//变量
+		explicit Value(Math_F x = 0)
 		{
-			opt = Opt::null;
+			opt = Optimizer::null;
 			rv = x;
 			a = b = nullptr;
 		}
@@ -68,14 +72,14 @@ namespace mlib
 		{
 			switch (opt)
 			{
-			case Opt::null:return rv;
-			case Opt::add:return a->get() + b->get();
-			case Opt::sub:return a->get() - b->get();
-			case Opt::mlt:return a->get() * b->get();
-			case Opt::div:return a->get() / b->get();
-			case Opt::pow:return ::pow(a->get(), b->get());
-			case Opt::log:return ::log(a->get()) / ::log(b->get());
-			case Opt::dvt:return a->get_dvt(*b);
+			case Optimizer::null:return rv;
+			case Optimizer::add:return a->get() + b->get();
+			case Optimizer::sub:return a->get() - b->get();
+			case Optimizer::mlt:return a->get() * b->get();
+			case Optimizer::div:return a->get() / b->get();
+			case Optimizer::pow:return ::pow(a->get(), b->get());
+			case Optimizer::log:return ::log(a->get()) / ::log(b->get());
+			case Optimizer::dvt:return a->get_dvt(*b);
 			}
 		}
 
@@ -120,7 +124,7 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::add;
+			res.opt = Optimizer::add;
 			return res;
 		}
 		Value operator-(const Value& b) const
@@ -128,7 +132,7 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::sub;
+			res.opt = Optimizer::sub;
 			return res;
 		}
 		Value operator*(const Value& b) const
@@ -136,7 +140,7 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::mlt;
+			res.opt = Optimizer::mlt;
 			return res;
 		}
 		Value operator/(const Value& b) const
@@ -144,16 +148,17 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::div;
+			res.opt = Optimizer::div;
 			return res;
 		}
+
 		Value operator-() const
 		{
 			Value res;
-			static Value zero = 0;
+			static Value zero(0);
 			res.a = &zero;
 			res.b = this;
-			res.opt = Opt::sub;
+			res.opt = Optimizer::sub;
 			return res;
 		}
 
@@ -163,7 +168,7 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::pow;
+			res.opt = Optimizer::pow;
 			return res;
 		}
 		//对数，log_b(a)
@@ -172,13 +177,14 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::log;
+			res.opt = Optimizer::log;
 			return res;
 		}
 		//自然对数，ln(a)
 		Value ln() const
 		{
-			return log(M_E);
+			static Value e(M_E);
+			return log(e);
 		}
 
 		//a对b求导，da/db
@@ -187,46 +193,76 @@ namespace mlib
 			Value res;
 			res.a = this;
 			res.b = &b;
-			res.opt = Opt::dvt;
+			res.opt = Optimizer::dvt;
 			return res;
 		}
 
-		//友元
-		Value friend operator+(Math_F a, const Value& b);
-		Value friend operator-(Math_F a, const Value& b);
-		Value friend operator*(Math_F a, const Value& b);
-		Value friend operator/(Math_F a, const Value& b);
+		/*非 const 运算*/
+
+		//赋值，但是建立运算关系
+		Value& operator=(const Value& _b)
+		{
+			static Value zero(0);
+			a = &_b;
+			b = &zero;
+			opt = Optimizer::add;
+			return *this;
+		}
 
 		/*以下功能仅限opt==null*/
 
 		//设置数值
 		bool set(Math_F x)
 		{
-			if (opt != Opt::null)return false;
-
+			if (opt != Optimizer::null)return false;
 			rv = x;
+			return true;
+		}
+
+		bool operator+=(Math_F x)
+		{
+			if (opt != Optimizer::null)return false;
+			rv += x;
+			return true;
+		}
+		bool operator-=(Math_F x)
+		{
+			if (opt != Optimizer::null)return false;
+			rv -= x;
+			return true;
+		}
+		bool operator*=(Math_F x)
+		{
+			if (opt != Optimizer::null)return false;
+			rv *= x;
+			return true;
+		}
+		bool operator/=(Math_F x)
+		{
+			if (opt != Optimizer::null)return false;
+			rv /= x;
 			return true;
 		}
 	};
 
 	//a^b
-	Value pow(const Value& a, const Value& b)
+	inline Value pow(const Value& a, const Value& b)
 	{
 		return a.pow(b);
 	}
 	//log_b(a)
-	Value log(const Value& a, const Value& b)
+	inline Value log(const Value& a, const Value& b)
 	{
 		return a.log(b);
 	}
-	Value ln(const Value& a)
+	inline Value ln(const Value& a)
 	{
 		return a.ln();
 	}
 
-	std::vector<Value> const_value_objects;//记录所有的 Value 常量对象
-	//Value 常量
-	Value vl(Math_F x)
+	static std::vector<Value> const_value_objects;//记录所有的 Value 常量对象
+	//常量
+	inline Value vl(Math_F x)
 	{
 		//找找看是否已经创建了
 		for (size_t i = 0; i < const_value_objects.size(); i++)
@@ -234,25 +270,7 @@ namespace mlib
 			if (const_value_objects[i].get() == x)return const_value_objects[i];
 		}
 		//创建新的
-		const_value_objects.push_back(x);
+		const_value_objects.push_back(Value(x));
 		return const_value_objects.back();
-	}
-
-	//友元
-	Value operator+(Math_F a, const Value& b)
-	{
-		return b + a;
-	}
-	Value operator-(Math_F a, const Value& b)
-	{
-		return Value(a) - b;
-	}
-	Value operator*(Math_F a, const Value& b)
-	{
-		return b * a;
-	}
-	Value operator/(Math_F a, const Value& b)
-	{
-		return Value(a) / b;
 	}
 }

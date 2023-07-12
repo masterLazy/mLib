@@ -10,7 +10,6 @@ namespace mlib
 	/*****************************************************************************
 	* Angle
 	* 角
-	*
 	*****************************************************************************/
 	class Angle
 	{
@@ -22,7 +21,7 @@ namespace mlib
 		{
 		public:
 			Math_F d;
-			Deg(Math_F _d) _RST
+			Deg(Math_F _d)
 			{
 				d = _d;
 			}
@@ -31,44 +30,44 @@ namespace mlib
 		{
 		public:
 			Math_F r;
-			Rad(Math_F _r) _RST
+			Rad(Math_F _r)
 			{
 				r = _r;
 			}
 		};
 
-		Angle() _RST
+		Angle()
 		{
 			fac = 0;
 		}
-		Angle(Deg deg) _RST
+		Angle(Deg deg)
 		{
 			fac = deg.d / 180;
 		}
-		Angle(Rad rad) _RST
+		Angle(Rad rad)
 		{
 			fac = rad.r / M_PI;
 		}
 
 
-		Math_F get_deg() const _RST
+		Math_F get_deg() const
 		{
 			return fac * 180;
 		}
-		Math_F get_rad() const _RST
+		Math_F get_rad() const
 		{
 			return fac * M_PI;
 		}
 
 		//简化
-		void sim() _RST
+		void sim()
 		{
 			while (fac > 2)fac -= 2;
 			while (fac < 0)fac += 2;
 		}
 
 		//获取两个角的差(不加绝对值)(小于平角)
-		static Angle dfc(Angle a, Angle b) _RST
+		static Angle dfc(Angle a, Angle b)
 		{
 			Angle res;
 			res.fac = a.fac - b.fac;
@@ -84,78 +83,78 @@ namespace mlib
 		}
 
 		//运算
-		Angle operator=(const Angle& b) _RST
+		Angle operator=(const Angle& b)
 		{
 			fac = b.fac;
 			return *this;
 		}
 		//相反方向的角
-		Angle operator-() const _RST
+		Angle operator-() const
 		{
 			Angle res;
 			res.fac = fac + 1;
 			return res;
 		}
 
-		Angle operator+(const Angle& b) const _RST
+		Angle operator+(const Angle& b) const
 		{
 			Angle res;
 			res.fac = fac + b.fac;
 			return res;
 		}
-		Angle operator-(const Angle& b) const _RST
+		Angle operator-(const Angle& b) const
 		{
 			Angle res;
 			res.fac = fac - b.fac;
 			return res;
 		}
 
-		Math_F operator*(const Angle& b) const _RST
+		Math_F operator*(const Angle& b) const
 		{
 			return fac * b.fac * M_PI;
 		}
-		Math_F operator/(const Angle& b) const _RST
+		Math_F operator/(const Angle& b) const
 		{
 			return fac / b.fac;
 		}
 
-		Angle operator*(const Math_F f) const _RST
+		Angle operator*(const Math_F f) const
 		{
 			Angle res;
 			res.fac = fac * f;
 			return res;
 		}
-		Angle operator/(const Math_F f) const _RST
+		Angle operator/(const Math_F f) const
 		{
 			Angle res;
 			res.fac = fac / f;
 			return res;
 		}
 
-		Angle friend operator*(const Math_F f, const Angle& b) _RST
+		Angle friend operator*(const Math_F f, const Angle& b)
 		{
 			Angle res;
 			res.fac = f * b.fac;
 			return res;
 		}
-		Angle friend operator/(const Math_F f, const Angle& b) _RST
+		Angle friend operator/(const Math_F f, const Angle& b)
 		{
 			Angle res;
 			res.fac = f / b.fac;
 			return res;
 		}
 
-		Angle operator+=(const Angle& b) _RST
+		Angle operator+=(const Angle& b)
 		{
 			*this = *this + b;
 			return *this;
 		}
-		Angle operator-=(const Angle& b) _RST
+		Angle operator-=(const Angle& b)
 		{
 			*this = *this - b;
 			return *this;
 		}
-		Angle operator*=(const Math_F f) _RST
+		Angle operator*=(const Math_F f)
 		{
 			*this = *this * f;
 			return *this;
@@ -167,27 +166,27 @@ namespace mlib
 		}
 
 		//关系运算
-		bool operator==(const Angle& b) const _RST
+		bool operator==(const Angle& b) const
 		{
 			return fac == b.fac;
 		}
-		bool operator!=(const Angle& b) const _RST
+		bool operator!=(const Angle& b) const
 		{
 			return !(*this == b);
 		}
-		bool operator>(const Angle& b) const _RST
+		bool operator>(const Angle& b) const
 		{
 			return fac > b.fac;
 		}
-		bool operator<(const Angle& b) const _RST
+		bool operator<(const Angle& b) const
 		{
 			return fac < b.fac;
 		}
-		bool operator>=(const Angle& b) const _RST
+		bool operator>=(const Angle& b) const
 		{
 			return !(*this < b);
 		}
-		bool operator<=(const Angle& b) const _RST
+		bool operator<=(const Angle& b) const
 		{
 			return !(*this > b);
 		}
@@ -196,40 +195,39 @@ namespace mlib
 	typedef Angle::Rad Rad;
 
 	//三角函数支持
-	Math_F sin(Angle a) _RST
+	inline Math_F sin(Angle a)
 	{
 		return ::sin(a.get_rad());
 	}
-	Math_F cos(Angle a) _RST
+	inline Math_F cos(Angle a)
 	{
 		return ::cos(a.get_rad());
 	}
-	Math_F tan(Angle a) _RST
+	inline Math_F tan(Angle a)
 	{
 		return ::tan(a.get_rad());
 	}
-	Angle arcsin(Math_F f) _RST
+	inline Angle arcsin(Math_F f)
 	{
 		return (Rad)::asin(f);
 	}
-	Angle arccos(Math_F f) _RST
+	inline Angle arccos(Math_F f)
 	{
 		return (Rad)::acos(f);
 	}
-	Angle arctan(Math_F f) _RST
+	inline Angle arctan(Math_F f)
 	{
 		return (Rad)::atan(f);
 	}
 
 	/*****************************************************************************
-	* GVector
-	* 向量（几何意义）
-	*
+	* Vector
+	* 向量(几何意义)
 	*****************************************************************************/
-	class GVector
+	class Vector
 	{
 	private:
-		void sim() _RST
+		void sim()
 		{
 			if (len < 0)
 			{
@@ -242,18 +240,18 @@ namespace mlib
 		Angle theta;	//方向
 		Math_F len;		//长度(模)
 
-		GVector() _RST
+		Vector()
 		{
 			theta = (Deg)0;
 			len = 0;
 		}
-		GVector(Angle _theta, Math_F _len) _RST
+		Vector(Angle _theta, Math_F _len)
 		{
 			theta = _theta;
 			len = _len;
 			sim();
 		}
-		GVector(Math_F x, Math_F y) _RST
+		Vector(Math_F x, Math_F y)
 		{
 			len = sqrt(pow(x, 2) + pow(y, 2));
 			if (len != 0)theta = arcsin(y / len);
@@ -263,18 +261,18 @@ namespace mlib
 
 			sim();
 		}
-		GVector(Math_F x0, Math_F y0, Math_F x1, Math_F y1) _RST
+		Vector(Math_F x0, Math_F y0, Math_F x1, Math_F y1)
 		{
-			*this = GVector(x1 - x0, y1 - y0);
+			*this = Vector(x1 - x0, y1 - y0);
 		}
 
-		void set(Angle _theta, Math_F _len) _RST
+		void set(Angle _theta, Math_F _len)
 		{
 			theta = _theta;
 			len = _len;
 			sim();
 		}
-		void set(Math_F x, Math_F y) _RST
+		void set(Math_F x, Math_F y)
 		{
 			len = sqrt(pow(x, 2) + pow(y, 2));
 			if (len != 0)theta = arcsin(y / len);
@@ -284,109 +282,113 @@ namespace mlib
 
 			sim();
 		}
-		void set(Math_F x0, Math_F y0, Math_F x1, Math_F y1) _RST
+		void set(Math_F x0, Math_F y0, Math_F x1, Math_F y1)
 		{
 			set(x1 - x0, y1 - y0);
 		}
 
-		void clear() _RST
+		void clear()
 		{
 			theta = (Deg)0;
 			len = 0;
 		}
 
-		Math_F get_x() const _RST
+		Math_F get_x() const
 		{
 			return len * cos(theta);
 		}
-		Math_F get_y() const _RST
+		Math_F get_y() const
 		{
 			return len * sin(theta);
 		}
+		POINT get_p(Math_F x0 = 0, Math_F y0 = 0) const
+		{
+			return POINT{ long(x0 + get_x()), long(y0 + get_y()) };
+		}
 
 		//运算
-		GVector operator=(const GVector& b) _RST
+		Vector operator=(const Vector& b)
 		{
 			theta = b.theta;
 			len = b.len;
 			return *this;
 		}
-		GVector operator-() const _RST
+		Vector operator-() const
 		{
-			return GVector(theta + (Deg)180, len);
+			return Vector(theta + (Deg)180, len);
 		}
 
-		GVector operator+(const GVector& b) const _RST
+		Vector operator+(const Vector& b) const
 		{
-			return GVector(get_x() + b.get_x(), get_y() + b.get_y());
+			return Vector(get_x() + b.get_x(), get_y() + b.get_y());
 		}
-		GVector operator-(const GVector& b) const _RST
+		Vector operator-(const Vector& b) const
 		{
-			return GVector(get_x() - b.get_x(), get_y() - b.get_y());
+			return Vector(get_x() - b.get_x(), get_y() - b.get_y());
 		}
-		GVector operator*(Math_F f) const _RST
+		Vector operator*(Math_F f) const
 		{
-			return GVector(f < 0 ? -theta : theta, len* fabs(f));
+			return Vector(f < 0 ? -theta : theta, len* fabs(f));
 		}
-		GVector operator/(Math_F f) const _RST
+		Vector operator/(Math_F f) const
 		{
-			return GVector(f < 0 ? -theta : theta, len / fabs(f));
+			return Vector(f < 0 ? -theta : theta, len / fabs(f));
 		}
 
-		GVector friend operator*(const Math_F f, const GVector& v) _RST
+		Vector friend operator*(const Math_F f, const Vector& v)
 		{
 			return v * f;
 		}
 
-		GVector operator+=(const GVector& b) _RST
+		Vector operator+=(const Vector& b)
 		{
 			*this = *this + b;
 			return *this;
 		}
-		GVector operator-=(const GVector& b) _RST
+		Vector operator-=(const Vector& b)
 		{
 			*this = *this - b;
 			return *this;
 		}
-		GVector operator*=(const Math_F f) _RST
+		Vector operator*=(const Math_F f)
 		{
 			*this = *this * f;
 			return *this;
 		}
-		GVector operator/=(const Math_F f) _RST
+		Vector operator/=(const Math_F f)
 		{
 			*this = *this / f;
 			return *this;
 		}
 
 		//关系运算
-		bool operator==(const GVector& b) const _RST
+		bool operator==(const Vector& b) const
 		{
 			return theta == b.theta && len == b.len;
 		}
-		bool operator!=(const GVector& b) const _RST
+		bool operator!=(const Vector& b) const
 		{
 			return !(*this == b);
 		}
-		bool operator>(const GVector& b) const _RST
+		bool operator>(const Vector& b) const
 		{
 			return len > b.len;
 		}
-		bool operator<(const GVector& b) const _RST
+		bool operator<(const Vector& b) const
 		{
 			return len < b.len;
 		}
-		bool operator>=(const GVector& b) const _RST
+		bool operator>=(const Vector& b) const
 		{
 			return !(*this < b);
 		}
-		bool operator<=(const GVector& b) const _RST
+		bool operator<=(const Vector& b) const
 		{
 			return !(*this > b);
 		}
 
 		//分量
-		void split(Angle thetaA, Angle thetaB, GVector* a, GVector* b) _RST
+		void split(Angle thetaA, Angle thetaB, Vector* a, Vector* b)
 		{
 			Angle alpha = theta - thetaA;
 			Angle beta = thetaB - theta;
@@ -394,10 +396,10 @@ namespace mlib
 			b->set(thetaB, len * sin(alpha) / sin(alpha + beta));
 		}
 		//垂直分量
-		GVector split(Angle thetaV) _RST
+		Vector split(Angle thetaV)
 		{
 			Angle alpha = theta - thetaV;
-			GVector res(thetaV, len * cos(alpha));
+			Vector res(thetaV, len * cos(alpha));
 			//千万确保度数一致,反Sim()
 			if (res.theta != thetaV)
 			{
@@ -409,23 +411,54 @@ namespace mlib
 
 		//绘制
 #ifdef EW_NOCLOSE	//easyx.h中的宏定义
-		void Draw(Mathe_F x, Mathe_F y, COLORREF color = RGB(255, 255, 255), Mathe_F zoom = 1)
+		void draw(Math_F x, Math_F y, Math_F zoom = 1, COLORREF color = RGB(255, 255, 255))
 		{
 			setlinecolor(color);
 			setfillcolor(color);
 			setlinestyle(PS_SOLID, 2);
 
 			POINT pt;
-			pt = GetP(x, y, theta, len * zoom);
+			pt = Vector(theta, len * zoom).get_p(x, y);
 			line(x, y, pt.x, pt.y);
 
 			setlinestyle(PS_SOLID, 1);
 			POINT pts[3];
-			pts[1] = GetP(x, y, theta, len * zoom);
-			pts[0] = GetP(pts[1], theta + (Deg)(180 + 30), min(20, len * zoom / 2));
-			pts[2] = GetP(pts[1], theta + (Deg)(180 - 30), min(20, len * zoom / 2));
+			pts[1] = pt;
+			pts[0] = Vector(theta + (Deg)(180 + 30), min(20, len * zoom / 2)).get_p(pt.x, pt.y);
+			pts[2] = Vector(theta - (Deg)(180 + 30), min(20, len * zoom / 2)).get_p(pt.x, pt.y);
 			fillpolygon(pts, 3);
 		}
 #endif
+	};
+
+	/*****************************************************************************
+	* Rect
+	* 矩形
+	*****************************************************************************/
+	struct Rect
+	{
+		Math_F left, top, right, bottom;
+	};
+
+	/*****************************************************************************
+	* Point
+	* 点
+	*****************************************************************************/
+	class Point
+	{
+	public:
+		Math_F x, y;
+
+		Point()
+		{
+			x = y = 0;
+		}
+
+		//允许隐式收缩转换
+		Point(int _x, int _y)
+		{
+			x = _x;
+			y = _y;
+		}
 	};
 }
