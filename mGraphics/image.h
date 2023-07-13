@@ -6,6 +6,7 @@
 * 基于WIC
 *****************************************************************************/
 
+#include <Windows.h>
 #include <wincodec.h>
 #include "../mFunction.h"
 
@@ -284,7 +285,7 @@ namespace mlib
 			if (!SUCCEEDED(res))return false;
 			return true;
 		}
-		//从内存加载图像
+		//从内存加载图像(COLORREF数组)
 		//[x][y]->[x*height+y]
 		bool load_from_mem(const COLORREF buf[], UINT width, UINT height)
 		{
@@ -359,6 +360,95 @@ namespace mlib
 		bool load_from_res(HINSTANCE hInstance, WORD index, const wchar_t rcType[])
 		{
 			return load_from_res(hInstance, MAKEINTRESOURCE(index), rcType);
+		}
+		//从窗口句柄加载图像
+		bool load_from_hwnd(HWND hWnd, int width, int height)
+		{
+			if (pBitmap != nullptr)pBitmap->Release();
+
+			//创建DC
+			HDC hDC = GetDC(hWnd);
+			if (hDC == NULL)return false;
+
+			//创建设备兼容的位图DC
+			HDC hDCMem = CreateCompatibleDC(hDC);
+			if (hDCMem == NULL)return false;
+
+			//创建设备兼容的位图
+			HBITMAP hBitmap = CreateCompatibleBitmap(hDC, width, height);
+			if (hBitmap == NULL)return false;
+
+			//将位图对象选入位图DC中
+			if (SelectObject(hDCMem, hBitmap) == NULL)return false;
+
+			//将屏幕内容复制到位图DC中
+			if (!BitBlt(hDCMem, 0, 0, width, height, hDC, 0, 0, SRCCOPY))
+			{
+				return false;
+			}
+
+			//获取像素(比较繁琐)
+			COLORREF* buf = new COLORREF[height * width];
+			BITMAPINFOHEADER bi;
+			bi.biSize = sizeof(BITMAPINFOHEADER);
+			bi.biWidth = width;
+			bi.biHeight = -height;
+			bi.biPlanes = 1;
+			bi.biBitCount = 32;	//图像深度(bit)
+			bi.biCompression = BI_RGB;
+			bi.biSizeImage = 0;
+			bi.biXPelsPerMeter = 0;
+			bi.biYPelsPerMeter = 0;
+			bi.biClrUsed = 0;
+			bi.biClrImportant = 0;
+			int iRes = GetDIBits(hDCMem, hBitmap, 0, height, buf, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+			if (iRes == NULL)return false;
+
+			//加载===================================================================================
+			HRESULT res;
+
+			//手动转换吧(和load_from_mem有所不同)
+			BYTE* temp = new BYTE[width * height * 4];
+			memset(temp, 0, width * height * 4);
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					temp[(x * height + y) * 4 + 2] = GetRValue(buf[x * height + y]);
+					temp[(x * height + y) * 4 + 1] = GetGValue(buf[x * height + y]);
+					temp[(x * height + y) * 4 + 0] = GetBValue(buf[x * height + y]);
+				}
+			}
+
+			//创建位图
+			res = pFactory->CreateBitmapFromMemory(
+				width,
+				height,
+				GUID_WICPixelFormat32bppRGB,
+				width * 4 * sizeof(BYTE),
+				width * height * 4 * sizeof(BYTE),
+				temp,
+				&pBitmap
+			);
+
+			//释放
+			DeleteObject(hBitmap);
+			DeleteDC(hDCMem);
+			ReleaseDC(hWnd, hDC);
+			delete[] buf;
+			delete[] temp;
+			if (!SUCCEEDED(res))return false;
+			return true;
+		}
+		//从屏幕捕获图像
+		bool load_from_screen()
+		{
+			//获取桌面句柄
+			HWND hWnd = GetDesktopWindow();
+			//获取屏幕分辨率
+			int width = GetSystemMetrics(SM_CXSCREEN);
+			int height = GetSystemMetrics(SM_CYSCREEN);
+			return load_from_hwnd(hWnd, width, height);
 		}
 		//从OpenCV Mat加载图像
 #ifdef OPENCV_CORE_MAT_HPP
@@ -532,6 +622,7 @@ namespace mlib
 				}
 			}
 		}
+		//转为vector(灰度)
 		//one: 是否归一化
 		std::vector<float> to_vec_f(bool one = false)
 		{
