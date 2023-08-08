@@ -1,7 +1,9 @@
 # mLib
-汇集了我编写的各种函数和类，功能覆盖多个方面和领域，正在不断完善中。我的许多个人程序和项目都会运用它们，欢迎大家使用！（可能会有宝藏功能哦！）mLib 遵循 MIT 开源协议（MIT License）。
+Welcome to use mLib! mLib is a library that includes functions and classes coded by me. Maybe there're some treasure functions you are looking for here! My projects are almost using it. mLib is under MIT License.
 
 To use mLib in your code, you need to install Visual C++, because mLib is using it. If you choose Visual Studio as your IDE, you don't need to install it in addition. mMath and mCode is not using Visual C++, and you can compile them with standard C++.
+
+Note: The earlier introducions (including release introductions) are Chinese. The new ones will be English.
 
 Now it's including the following sub-lib：
 ## 1. mFunction
@@ -24,4 +26,4 @@ Encode and decode (Base64，UTF-8，URI)。
 ## 6. mDnn
 Neural network. It's excellent.
 1. mNetwork/layers.h, Neural network layers.
-2. mNetwork/AOLR.h, Activate functions, 、损失函数、正则化方法。
+2. mNetwork/AOLR.h, Activate functions, O, Loss functions, R。
