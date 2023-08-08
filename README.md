@@ -17,12 +17,12 @@ Mathematics.
 1. mMath/geometry.h, Geometry.
 2. mMath/algebra.h, Algebra.
 3. mMath/num.h，Multi-dimension array imitating Numpy.
-4. mMath/value.h, Value chain, mainly used for auto derivation。
-5. mMath/numEx.h, High precision number。
+4. mMath/value.h, Value chain, mainly used for auto derivation.
+5. mMath/numEx.h, High precision number.
 ## 4. mWeb
 Web.Though here's no much introduction, but it's not simple!
 ## 5. mCode
-Encode and decode (Base64，UTF-8，URI)。
+Encode and decode (Base64，UTF-8，URI).
 ## 6. mDnn
 Neural network. It's excellent.
 1. mNetwork/layers.h, Neural network layers.
