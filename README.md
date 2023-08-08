@@ -9,7 +9,7 @@ Now it's including the following sub-libs：
 ## 1. mFunction
 Many relatively small and useful functions are here.
 ## 2. mGraphics.h
-Graphics drawing based on Direct 2D.
+Graphics drawing based on Direct2D.
 1. mGraphics/image.h, Image loading, saving and drawing.
 2. mGraphics/figure.h, Drawing for science.
 ## 3. mMath
