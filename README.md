@@ -1,7 +1,7 @@
 # mLib
 Welcome to use mLib! mLib is a library that includes functions and classes coded by me. Maybe there're some treasure functions you are looking for here! My projects are almost using it. mLib is under MIT License.
 
-To use mLib in your code, you need to install Visual C++, because mLib is using it. If you choose Visual Studio as your IDE, you don't need to install it in addition. mMath and mCode is not using Visual C++, and you can compile them with standard C++.
+To use mLib in your code, you need to install Visual C++, because mLib is using it. If you choose Visual Studio as your IDE, you don't need to install it in addition. mMath and mCode are not using Visual C++, and you can compile them with standard C++.
 
 Note: The earlier introducions (including release introductions) are Chinese. The new ones will be English.
 
