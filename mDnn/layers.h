@@ -33,8 +33,8 @@ namespace layers
 	public:
 		Trans() {}
 		/// <param name="input_shape">本层输入的 Shape</param>
-		/// <param name="output_shape">期望转换成的 Shape</param>
-		Trans(Shape input_shape, Shape output_shape);
+		/// <param name="output_shape">期望转换成的 Shape (留空则展平成一维)</param>
+		Trans(Shape input_shape, Shape output_shape = {});
 	};
 
 	/*****************************************************************************
