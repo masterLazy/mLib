@@ -26,4 +26,4 @@ Encode and decode (Base64，UTF-8，URI)。
 ## 6. mDnn
 Neural network. It's excellent.
 1. mNetwork/layers.h, Neural network layers.
-2. mNetwork/AOLR.h, Activate functions, O, Loss functions, R。
+2. mNetwork/AOLR.h, Activation functions, Optimizers, Loss functions, Regularizations。
