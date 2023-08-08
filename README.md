@@ -22,8 +22,8 @@ Mathematics.
 ## 4. mWeb
 Web. Though here's no much introduction, but it's not simple!
 ## 5. mCode
-Encode and decode (Base64, UTF-8, URI).
+Encoding and decoding (Base64, UTF-8, URI).
 ## 6. mDnn
-Neural network. It's excellent.
+Neural network. It's an excellent lib.
 1. mNetwork/layers.h, Neural network layers.
 2. mNetwork/AOLR.h, Activation functions, Optimizers, Loss functions, Regularizations.
