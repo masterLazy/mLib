@@ -7,7 +7,7 @@ Note: The earlier introducions (including release introductions) are Chinese. Th
 
 Now it's including the following sub-libs：
 ## 1. mFunction
-Many small and useful functions are here.
+Many relatively small and useful functions are here.
 ## 2. mGraphics.h
 Graphics drawing based on Direct 2D.
 1. mGraphics/image.h, Image loading, saving and drawing.
@@ -17,7 +17,7 @@ Mathematics.
 1. mMath/geometry.h, Geometry.
 2. mMath/algebra.h, Algebra.
 3. mMath/num.h，Multi-dimension array imitating Numpy.
-4. mMath/value.h, Value chain,, mainly used for auto derivation。
+4. mMath/value.h, Value chain, mainly used for auto derivation。
 5. mMath/numEx.h, High precision number。
 ## 4. mWeb
 Web.Though here's no much introduction, but it's not simple!
@@ -26,4 +26,4 @@ Encode and decode (Base64，UTF-8，URI)。
 ## 6. mDnn
 Neural network. It's excellent.
 1. mNetwork/layers.h, Neural network layers.
-2. mNetwork/AOLR.h, Activation functions, Optimizers, Loss functions, Regularizations。
+2. mNetwork/AOLR.h, Activation functions, Optimizers, Loss functions, Regularizations.
