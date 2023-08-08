@@ -639,7 +639,7 @@ namespace mlib
 	//查找含指定字符串的窗口
 	static HWND _find_hWnd;
 	static std::wstring _find_str;
-	inline BOOL CALLBACK FindWindowProc(HWND hWnd, LPARAM lParam)
+	inline BOOL CALLBACK _FindWindowProc(HWND hWnd, LPARAM lParam)
 	{
 		wchar_t szText[128] = { 0 };
 		GetWindowText(hWnd, szText, 128);
@@ -659,7 +659,7 @@ namespace mlib
 	{
 		_find_str = str;
 		_find_hWnd = NULL;
-		EnumWindows(FindWindowProc, NULL);
+		EnumWindows(_FindWindowProc, NULL);
 		return _find_hWnd;
 	}
 

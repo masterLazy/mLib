@@ -6,6 +6,8 @@
 
 #include "mDnn.h"
 
+#include <iostream>	//FOR DEBUG
+
 using namespace mlib;
 
 /*层*/
@@ -65,6 +67,10 @@ Array_F Input::predict()
 *****************************************************************************/
 Trans::Trans(Shape input_shape, Shape output_shape)
 {
+	if (output_shape.empty())
+	{
+		output_shape = { SizeOfShape(input_shape) };
+	}
 	//检查异常
 	if (SizeOfShape(input_shape) != SizeOfShape(output_shape))throw_error(DnnLayerError::trans_creating);
 	in_shape = input_shape;
@@ -637,7 +643,7 @@ Array_F Pool2d::predict(const Array_F& input)
 						case PoolType::maxpool:
 							if (now > max)max = now;
 							break;
-						case PoolType::meanpool:
+						case PoolType::avgpool:
 							sum += now;
 							break;
 						}
@@ -649,7 +655,7 @@ Array_F Pool2d::predict(const Array_F& input)
 				case PoolType::maxpool:
 					a[temp] = max;
 					break;
-				case PoolType::meanpool:
+				case PoolType::avgpool:
 					a[temp] = sum / kn_w / kn_h;
 					break;
 				}
@@ -695,7 +701,7 @@ Array_F Pool2d::train(const Array_F& dvt)
 							max_x = x1;
 							max_y = y1;
 							break;
-						case PoolType::meanpool:
+						case PoolType::avgpool:
 							dC_dla[(x0 + x1) * in_shape[1] * in_dim + (y0 + y1) * in_dim + z0] =
 								dvt[temp] / kn_w / kn_h;
 							break;
@@ -763,7 +769,7 @@ Array_F Pool2d::train_last(const Array_F& output, Loss loss)
 							max_x = x1;
 							max_y = y1;
 							break;
-						case PoolType::meanpool:
+						case PoolType::avgpool:
 							dC_dla[(x0 + x1) * in_shape[1] * in_dim + (y0 + y1) * in_dim + z0] =
 								dvt / kn_w / kn_h;
 							break;
@@ -885,6 +891,7 @@ bool Sequential::save(std::wstring filename)
 			Trans* p = (Trans*)layers[i];
 			f.write(p->get_input_shape());
 			f.write(p->get_output_shape());
+			break;
 		}
 		case LayerType::dense:
 		{
@@ -989,8 +996,8 @@ bool Sequential::load(std::wstring filename)
 				info.kn_w, info.kn_h, info.pad_w, info.pad_h,
 				info.str_w, info.str_h));
 			//参数
-			f.read(((Dense*)layers[i])->w);
-			f.read(((Dense*)layers[i])->b);
+			f.read(((Conv2d*)layers[i])->w);
+			f.read(((Conv2d*)layers[i])->b);
 			break;
 		}
 		case LayerType::pool2d:
@@ -1125,7 +1132,9 @@ Dnn_F Sequential::fit(const std::vector<Array_F>& x_train, const std::vector<Arr
 		throw_error(DnnModelError::fitting_init);
 	}
 
+	//测试
 	Dnn_F res = test(x_train, y_train);
+	
 	//自动停止
 	if (opt == Optimizer::adam_as)
 	{

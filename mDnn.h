@@ -17,7 +17,7 @@ typedef float Dnn_F;
 #include <cmath>
 #include <vector>
 #include <stdexcept>//异常处理
-//GPU 加速，冲冲冲！
+//GPU 加速，启动！
 #include <amp.h>
 #include <amp_math.h>
 
@@ -129,7 +129,7 @@ namespace mlib
 	enum class PoolType
 	{
 		maxpool,	//最大池化
-		meanpool	//均值池化
+		avgpool	//均值池化
 	};
 
 #include"mDnn/layers.h" //神经网络层

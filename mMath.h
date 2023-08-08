@@ -34,30 +34,6 @@ namespace mlib
 	}
 
 	/*****************************************************************************
-	* 随机数
-	*****************************************************************************/
-
-	namespace random
-	{
-		//均匀分布
-		inline Math_F random(Math_F min, Math_F max)
-		{
-			return Map(rand(), 0, RAND_MAX, min, max);
-		}
-
-		//正态分布
-		inline Math_F normal(Math_F min, Math_F max)
-		{
-			Math_F u1 = random(0, 1);
-			Math_F u2 = random(0, 1);
-			//Box-muller 方法
-			//μ=0, σ=1
-			Math_F z = sqrt(-2 * ::log(u1)) * ::cos(2 * M_PI * u2);
-			return Map(z, -1 * 3, 1 * 3, min, max);//3σ原则不能忘
-		}
-	}
-
-	/*****************************************************************************
 	* Particle
 	* 质点
 	* 应用Verlet积分法

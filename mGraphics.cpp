@@ -312,9 +312,10 @@ void Graphics::trans_clear()
 	pRenderTarget->SetTransform(trans);
 }
 
-bool Graphics::draw_text(float x, float y, const wchar_t str[], Brush_t* brush, Font font)
+bool Graphics::draw_text(float x, float y, const std::wstring& str, Brush_t* brush, Font font)
 {
-	IDWriteTextFormat* textFormat;
+	//创建TextFormat
+	IDWriteTextFormat* pTextFormat;
 	HRESULT res = pWriteFactory->CreateTextFormat(
 		font.szFontName,
 		NULL,
@@ -323,34 +324,28 @@ bool Graphics::draw_text(float x, float y, const wchar_t str[], Brush_t* brush, 
 		DWRITE_FONT_STRETCH_NORMAL,
 		font.size,
 		L"zh-cn",
-		&textFormat
+		&pTextFormat
 	);
-	if (!SUCCEEDED(res))return false;
-
-	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
-	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(x, y, 1e10, 1e10), brush);
-
-	return true;
-}
-bool Graphics::draw_text_c(float midX, float y, const wchar_t str[], Brush_t* brush, Font font)
-{
-	float width = 0;
-	for (int i = 0; i < wcslen(str); i++)
+	if (!SUCCEEDED(res))
 	{
-		if (str[i] < 255)
-		{
-			width += 0.5;
-		}
-		else
-		{
-			width += 1;
-		}
+		//释放资源
+		pTextFormat->Release();
+		brush->Release();
+		return false;
 	}
-	return draw_text(midX - width * font.size / 2, y, str, brush, font);
+
+	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
+	pRenderTarget->DrawText(str.c_str(), str.size(), pTextFormat, D2D1::RectF(x, y, 1e10, 1e10), brush);
+
+	//释放资源
+	pTextFormat->Release();
+	brush->Release();
+	return true;
 }
-bool Graphics::draw_text(float left, float top, float right, float bottom, const wchar_t str[], Brush_t* brush, Font font)
+bool Graphics::draw_text(float left, float top, float right, float bottom, const std::wstring& str, Brush_t* brush, Font font)
 {
-	IDWriteTextFormat* textFormat;
+	//创建TextFormat
+	IDWriteTextFormat* pTextFormat;
 	HRESULT res = pWriteFactory->CreateTextFormat(
 		font.szFontName,
 		NULL,
@@ -359,14 +354,83 @@ bool Graphics::draw_text(float left, float top, float right, float bottom, const
 		DWRITE_FONT_STRETCH_NORMAL,
 		font.size,
 		L"zh-cn",
-		&textFormat
+		&pTextFormat
 	);
-	if (!SUCCEEDED(res))return false;
+	if (!SUCCEEDED(res))
+	{
+		//释放资源
+		pTextFormat->Release();
+		brush->Release();
+		return false;
+	}
 
 	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
-	pRenderTarget->DrawText(str, wcslen(str), textFormat, D2D1::RectF(left, top, right, bottom), brush);
+	pRenderTarget->DrawText(str.c_str(), str.size(), pTextFormat, D2D1::RectF(left, top, right, bottom), brush);
 
+	//释放资源
+	pTextFormat->Release();
+	brush->Release();
 	return true;
+}
+Rect Graphics::get_text_rect(const std::wstring& str, Font font)
+{
+	//创建TextFormat
+	IDWriteTextFormat* pTextFormat;
+	HRESULT res = pWriteFactory->CreateTextFormat(
+		font.szFontName,
+		NULL,
+		(DWRITE_FONT_WEIGHT)font.weight,
+		(DWRITE_FONT_STYLE)font.style,
+		DWRITE_FONT_STRETCH_NORMAL,
+		font.size,
+		L"zh-cn",
+		&pTextFormat
+	);
+	if (!SUCCEEDED(res))return {};
+
+	//创建TextLayout
+	IDWriteTextLayout* pTextLayout;
+	res = pWriteFactory->CreateTextLayout(
+		str.c_str(),
+		str.size(),
+		pTextFormat,
+		1e10, 1e10,
+		&pTextLayout
+	);
+	if (!SUCCEEDED(res))return {};
+
+	//获取属性
+	DWRITE_TEXT_METRICS textMetrics;
+	res = pTextLayout->GetMetrics(&textMetrics);
+
+	//释放资源
+	pTextFormat->Release();
+	pTextLayout->Release();
+
+	if (!SUCCEEDED(res))return {};
+
+	return { textMetrics.left,
+		textMetrics.top,
+		textMetrics.left + textMetrics.width,
+		textMetrics.top + textMetrics.height };
+}
+bool Graphics::draw_text_c(float midX, float midY, const std::wstring& str, Brush_t* brush, Font font)
+{
+	Rect rect = get_text_rect(str, font);
+
+	return draw_text(
+		midX - (rect.right - rect.left) / 2 + rect.left,
+		midY - (rect.bottom - rect.top) / 2 + rect.top,
+		str, brush, font);
+}
+bool Graphics::draw_text_cx(float midX, float y, const std::wstring& str, Brush_t* brush, Font font)
+{
+	Rect rect = get_text_rect(str, font);
+
+	return draw_text(
+		midX - (rect.right - rect.left) / 2 + rect.left,
+		y,
+		str, brush, font);
 }
 
 void Graphics::draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth)
@@ -377,37 +441,45 @@ void Graphics::draw_line(float x1, float y1, float x2, float y2, Brush_t* brush,
 void Graphics::draw_rectangle(float left, float top, float right, float bottom, Brush_t* brush, float lineWidth)
 {
 	pRenderTarget->DrawRectangle(D2D1::Rect(left, top, right, bottom), brush, lineWidth);
+	brush->Release();
 }
 void Graphics::fill_rectangle(float left, float top, float right, float bottom, Brush_t* brush)
 {
 	pRenderTarget->FillRectangle(D2D1::Rect(left, top, right, bottom), brush);
+	brush->Release();
 }
 
 void Graphics::draw_r_rectangle(float left, float top, float right, float bottom, float r, Brush_t* brush, float lineWidth)
 {
 	pRenderTarget->DrawRoundedRectangle(D2D1::RoundedRect(D2D1::Rect(left, top, right, bottom), r, r), brush, lineWidth);
+	brush->Release();
 }
 void Graphics::fill_r_rectangle(float left, float top, float right, float bottom, float r, Brush_t* brush)
 {
 	pRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(D2D1::Rect(left, top, right, bottom), r, r), brush);
+	brush->Release();
 }
 
 void Graphics::draw_ellipse(float x, float y, float width, float height, Brush_t* brush, float lineWidth)
 {
 	pRenderTarget->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(x, y), width, height), brush, lineWidth);
+	brush->Release();
 }
 void Graphics::fill_ellipse(float x, float y, float width, float height, Brush_t* brush)
 {
 	pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(x, y), width, height), brush);
+	brush->Release();
 }
 
 void Graphics::draw_circle(float x, float y, float r, Brush_t* brush, float lineWidth)
 {
 	return draw_ellipse(x, y, r, r, brush, lineWidth);
+	brush->Release();
 }
 void Graphics::fill_circle(float x, float y, float r, Brush_t* brush)
 {
 	return fill_ellipse(x, y, r, r, brush);
+	brush->Release();
 }
 
 void Graphics::draw_polygon(std::vector<Point> pts, Brush_t* brush, float lineWidth)
@@ -424,6 +496,7 @@ void Graphics::draw_polygon(std::vector<Point> pts, Brush_t* brush, float lineWi
 	gmt.end();
 	gmt.end_def();
 	gmt.draw(*this, brush, lineWidth);
+	brush->Release();
 }
 void Graphics::fill_polygon(std::vector<Point> pts, Brush_t* brush)
 {
@@ -439,6 +512,7 @@ void Graphics::fill_polygon(std::vector<Point> pts, Brush_t* brush)
 	gmt.end();
 	gmt.end_def();
 	gmt.fill(*this, brush);
+	brush->Release();
 }
 
 bool Graphics::draw_image(const Image& img, float x, float y, float width, float height, float angle, float alpha, bool interpolation)

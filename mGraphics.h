@@ -7,8 +7,6 @@
 *****************************************************************************/
 
 #include <Windows.h>
-//#undef max
-//#undef min
 #include <windowsx.h>
 #include <d2d1.h>
 #include <d2d1_1.h>
@@ -19,56 +17,15 @@
 
 #include "mGraphics/image.h"	//图像
 
+#undef max
+#undef min
+
 #pragma comment(lib,"d2d1.lib")
 #pragma comment(lib,"dwrite.lib")
-#pragma comment(lib,"windowscodecs.lib")
 
 namespace mlib
 {
-#define CTRL_BG_COLOR ((COLORREF)0xf0f0f0)	//控件的背景颜色
-
-	/*****************************************************************************
-	* Font
-	* 字体
-	*****************************************************************************/
-
-	//字体粗细
-#undef BLACK
-	enum class FontWeight
-	{
-		THIN = 100,
-		EXTRA_LIGHT = 200,
-		ULTRA_LIGHT = 200,
-		LIGHT = 300,
-		SEMI_LIGHT = 350,
-		NORMAL = 400,
-		REGULAR = 400,
-		MEDIUM = 500,
-		DEMI_BOLD = 600,
-		SEMI_BOLD = 600,
-		BOLD = 700,
-		EXTRA_BOLD = 800,
-		ULTRA_BOLD = 800,
-		BLACK = 900,
-		HEAVY = 900,
-		EXTRA_BLACK = 950,
-		ULTRA_BLACK = 950
-	};
-	//字体样式
-	enum class FontStyle
-	{
-		NORMAL,	//正常
-		OBLIQUE,	//斜体
-		ITALIC	//意大利体
-	};
-	//字体
-	struct Font
-	{
-		const wchar_t* szFontName = L"微软雅黑";		//字体名称
-		FontWeight weight = FontWeight::REGULAR;	//字体粗细
-		FontStyle style = FontStyle::NORMAL;		//字体样式
-		float size = 20;							//字体大小
-	};
+	const COLORREF CTRL_BG_COLOR = 0xf0f0f0;	//控件的背景颜色
 
 	typedef ID2D1Brush Brush_t;
 
@@ -100,6 +57,7 @@ namespace mlib
 		/*****************************************************************************
 		* Brush_t
 		* 画笔
+		* 早晚把它改成一个类
 		*****************************************************************************/
 
 		//创建纯色画笔
@@ -207,17 +165,62 @@ namespace mlib
 		void trans_clear();
 
 
-		/*绘制图形*/
+		/*文本*/
 
+		//字体粗细
+#undef BLACK
+		enum class FontWeight
+		{
+			THIN = 100,
+			EXTRA_LIGHT = 200,
+			ULTRA_LIGHT = 200,
+			LIGHT = 300,
+			SEMI_LIGHT = 350,
+			NORMAL = 400,
+			REGULAR = 400,
+			MEDIUM = 500,
+			DEMI_BOLD = 600,
+			SEMI_BOLD = 600,
+			BOLD = 700,
+			EXTRA_BOLD = 800,
+			ULTRA_BOLD = 800,
+			BLACK = 900,
+			HEAVY = 900,
+			EXTRA_BLACK = 950,
+			ULTRA_BLACK = 950
+		};
+		//字体样式
+		enum class FontStyle
+		{
+			NORMAL,	//正常
+			OBLIQUE,	//斜体
+			ITALIC	//意大利体
+		};
+		//字体
+		struct Font
+		{
+			const wchar_t* szFontName = L"微软雅黑";		//字体名称
+			FontWeight weight = FontWeight::REGULAR;	//字体粗细
+			FontStyle style = FontStyle::NORMAL;		//字体样式
+			float size = 20;							//字体大小
+		};
+		inline static const Font def_font;
 
 		//绘制文本
-		bool draw_text(float x, float y, const wchar_t str[], Brush_t* brush,
-			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
-		bool draw_text_c(float midX, float y, const wchar_t str[], Brush_t* brush,
-			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
-		//绘制文本(自动换行)
-		bool draw_text(float left, float top, float right, float bottom, const wchar_t str[], Brush_t* brush,
-			Font font = { L"微软雅黑",FontWeight::REGULAR,FontStyle::NORMAL,15 });
+		bool draw_text(float x, float y, const std::wstring& str, Brush_t* brush, Font font = def_font);
+		//绘制文本(限定矩形内)
+		bool draw_text(float left, float top, float right, float bottom, const std::wstring& str, Brush_t* brush, Font font = def_font);
+
+		//获取文本所占矩形(相对于绘制原点)
+		Rect get_text_rect(const std::wstring& str, Font font);
+		//居中绘制文本
+		bool draw_text_c(float midX, float midY, const std::wstring& str, Brush_t* brush, Font font = def_font);
+		//只在x方向上居中绘制文本
+		bool draw_text_cx(float midX, float y, const std::wstring& str, Brush_t* brush, Font font = def_font);
+
+
+		/*绘制图形*/
+
 
 		//绘制直线
 		void draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth = 1);
@@ -268,6 +271,9 @@ namespace mlib
 	};
 
 	typedef Graphics::Geometry Geometry;
+	typedef Graphics::FontWeight FontWeight;
+	typedef Graphics::FontStyle FontStyle;
+	typedef Graphics::Font Font;
 }
 
 #include "mGraphics/figure.h"	//科学绘图
