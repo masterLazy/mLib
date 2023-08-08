@@ -6,9 +6,10 @@
 * »ùÓÚWIC
 *****************************************************************************/
 
-#include <Windows.h>
 #include <wincodec.h>
 #include "../mFunction.h"
+
+#pragma comment(lib,"windowscodecs.lib")
 
 namespace mlib
 {
