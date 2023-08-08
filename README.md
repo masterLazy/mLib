@@ -5,7 +5,7 @@ To use mLib in your code, you need to install Visual C++, because mLib is using 
 
 Note: The earlier introducions (including release introductions) are Chinese. The new ones will be English.
 
-Now it's including the following sub-lib：
+Now it's including the following sub-libs：
 ## 1. mFunction
 Many small and useful functions are here.
 ## 2. mGraphics.h
