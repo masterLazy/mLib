@@ -20,7 +20,7 @@ Mathematics.
 4. mMath/value.h, Value chain,, mainly used for auto derivation。
 5. mMath/numEx.h, High precision number。
 ## 4. mWeb
-Web.Though here's no more introduction, but it's not simple!
+Web.Though here's no much introduction, but it's not simple!
 ## 5. mCode
 Encode and decode (Base64，UTF-8，URI)。
 ## 6. mDnn
