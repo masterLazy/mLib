@@ -436,6 +436,7 @@ bool Graphics::draw_text_cx(float midX, float y, const std::wstring& str, Brush_
 void Graphics::draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth)
 {
 	pRenderTarget->DrawLine(D2D1::Point2F(x1, y1), D2D1::Point2F(x2, y2), brush, lineWidth);
+	brush->Release();
 }
 
 void Graphics::draw_rectangle(float left, float top, float right, float bottom, Brush_t* brush, float lineWidth)
