@@ -1,20 +1,21 @@
 # mLib
+
 ## Introduction
 
-mLib collects some codes by mLazy. He use this lib in his projects. mLib includes the following sub-libs:
+mLib collects some codes that code by mLazy. He use this lib in his projects. mLib includes the following sub-libs:
 
 - mFunction
-Many relatively small and useful functions are here.
--  mGraphics
-Graphics drawing based on Direct2D.
+  Many relatively small and useful functions are here.
+- mGraphics
+  Graphics drawing based on Direct2D.
 - mMath
-Mathematics.
--  mWeb
-Web. Though here's no much introduction, but it's not simple!
--  mCode
-Encoding and decoding (Base64, UTF-8, URI).
+  Mathematics.
+- mWeb
+  Web. Though here's no much introduction, but it's not simple!
+- mCode
+  Encoding and decoding (Base64, UTF-8, URI).
 - mDnn
-Neural network. It's an excellent lib.
+  Neural network. It's an excellent lib.
 
 ## Situation
 
