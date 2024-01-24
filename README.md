@@ -1,29 +1,21 @@
 # mLib
-Welcome to use mLib! mLib is a library that includes functions and classes coded by me. Maybe there're some treasure functions you are looking for here! My projects are almost using it. mLib is under MIT License.
+## Introduction
 
-To use mLib in your code, you need to install Visual C++, because mLib is using it. If you choose Visual Studio as your IDE, you don't need to install it in addition. mMath and mCode are not using Visual C++, and you can compile them with standard C++.
+mLib collects some codes by mLazy. He use this lib in his projects. mLib includes the following sub-libs:
 
-Note: The earlier introducions (including release introductions) are Chinese. The new ones will be English.
-
-Now it's including the following sub-libs：
-## 1. mFunction
+- mFunction
 Many relatively small and useful functions are here.
-## 2. mGraphics
+-  mGraphics
 Graphics drawing based on Direct2D.
-1. mGraphics/image.h, Image loading, saving and drawing.
-2. mGraphics/figure.h, Drawing for science.
-## 3. mMath
+- mMath
 Mathematics.
-1. mMath/geometry.h, Geometry.
-2. mMath/algebra.h, Algebra.
-3. mMath/num.h,Multi-dimension array imitating Numpy.
-4. mMath/value.h, Value chain, mainly used for auto derivation.
-5. mMath/numEx.h, High precision number.
-## 4. mWeb
+-  mWeb
 Web. Though here's no much introduction, but it's not simple!
-## 5. mCode
+-  mCode
 Encoding and decoding (Base64, UTF-8, URI).
-## 6. mDnn
+- mDnn
 Neural network. It's an excellent lib.
-1. mNetwork/layers.h, Neural network layers.
-2. mNetwork/AOLR.h, Activation functions, Optimizers, Loss functions, Regularizations.
+
+## Situation
+
+mLib lacks maintain, and it's a immature lib with many unknown bugs. mLazy is going to create another lib in the future. But this lib will be retained, maybe.
