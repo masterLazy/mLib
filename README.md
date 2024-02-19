@@ -19,4 +19,4 @@ mLib collects some codes that code by mLazy. He use this lib in his projects. mL
 
 ## Situation
 
-mLib lacks maintain, and it's a immature lib with many unknown bugs. mLazy is going to create another lib in the future. But this lib will be retained, maybe.
+mLib lacks maintain. Some part of it still works well but other parts doesn't.
