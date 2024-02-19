@@ -1,6 +1,6 @@
 # mLib
 
-## Introduction
+## Introduction (Classic branch)
 
 mLib collects some codes that code by mLazy. He use this lib in his projects. mLib includes the following sub-libs:
 
@@ -20,3 +20,7 @@ mLib collects some codes that code by mLazy. He use this lib in his projects. mL
 ## Situation
 
 mLib lacks maintain. Some part of it still works well but other parts don't.
+
+## Releases
+
+`mLib v1.3.2` and earlier releases.
