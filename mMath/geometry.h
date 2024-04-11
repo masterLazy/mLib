@@ -220,6 +220,83 @@ namespace mlib
 		return (Rad)::atan(f);
 	}
 
+
+	/*****************************************************************************
+	* Rect
+	* 矩形范围
+	*****************************************************************************/
+	class Rect
+	{
+	public:
+		Math_F left, top, right, bottom;
+
+		Rect()
+		{
+			left = top = right = bottom = 0;
+		}
+		Rect(Math_F _left, Math_F _top, Math_F _right, Math_F _bottom)
+		{
+			left = _left;
+			top = _top;
+			right = _right;
+			bottom = _bottom;
+		}
+		//允许隐式收缩转换
+		template<typename T1, typename T2, typename T3, typename T4>
+		Rect(T1 _left, T2 _top, T3 _right, T4 _bottom)
+		{
+			left = _left;
+			top = _top;
+			right = _right;
+			bottom = _bottom;
+		}
+
+		//兼容
+		Rect(RECT& r)
+		{
+			left = r.left;
+			top = r.top;
+			right = r.right;
+			bottom = r.bottom;
+		}
+		operator RECT() const
+		{
+			return { (LONG)left,(LONG)top,(LONG)right,(LONG)bottom };
+		}
+	};
+
+	/*****************************************************************************
+	* Point
+	* 点
+	*****************************************************************************/
+	class Point
+	{
+	public:
+		Math_F x, y;
+
+		Point()
+		{
+			x = y = 0;
+		}
+		Point(Math_F _x, Math_F _y)
+		{
+			x = _x;
+			y = _y;
+		}
+		//允许隐式收缩转换
+		Point(int _x, int _y)
+		{
+			x = _x;
+			y = _y;
+		}
+
+		//兼容
+		operator POINT() const
+		{
+			return { (LONG)x,(LONG)y };
+		}
+	};
+
 	/*****************************************************************************
 	* Vector
 	* 向量(几何意义)
@@ -253,7 +330,7 @@ namespace mlib
 		}
 		Vector(Math_F x, Math_F y)
 		{
-			len = sqrt(pow(x, 2) + pow(y, 2));
+			len = sqrt(::pow(x, 2) + ::pow(y, 2));
 			if (len != 0)theta = arcsin(y / len);
 			else theta = (Deg)0;
 			//分类讨论
@@ -266,27 +343,7 @@ namespace mlib
 			*this = Vector(x1 - x0, y1 - y0);
 		}
 
-		void set(Angle _theta, Math_F _len)
-		{
-			theta = _theta;
-			len = _len;
-			sim();
-		}
-		void set(Math_F x, Math_F y)
-		{
-			len = sqrt(pow(x, 2) + pow(y, 2));
-			if (len != 0)theta = arcsin(y / len);
-			else theta = (Deg)0;
-			//分类讨论
-			if (x < 0)theta = (Angle)(Deg)180 - theta;
-
-			sim();
-		}
-		void set(Math_F x0, Math_F y0, Math_F x1, Math_F y1)
-		{
-			set(x1 - x0, y1 - y0);
-		}
-
+		//归零
 		void clear()
 		{
 			theta = (Deg)0;
@@ -301,9 +358,9 @@ namespace mlib
 		{
 			return len * sin(theta);
 		}
-		POINT get_p(Math_F x0 = 0, Math_F y0 = 0) const
+		Point get_p(Math_F x0 = 0, Math_F y0 = 0) const
 		{
-			return POINT{ long(x0 + get_x()), long(y0 + get_y()) };
+			return { x0 + get_x(), y0 + get_y() };
 		}
 
 		//运算
@@ -328,7 +385,7 @@ namespace mlib
 		}
 		Vector operator*(Math_F f) const
 		{
-			return Vector(f < 0 ? -theta : theta, len* fabs(f));
+			return Vector(f < 0 ? -theta : theta, len * fabs(f));
 		}
 		Vector operator/(Math_F f) const
 		{
@@ -392,8 +449,8 @@ namespace mlib
 		{
 			Angle alpha = theta - thetaA;
 			Angle beta = thetaB - theta;
-			a->set(thetaA, len * sin(beta) / sin(alpha + beta));
-			b->set(thetaB, len * sin(alpha) / sin(alpha + beta));
+			*a = { thetaA, len * sin(beta) / sin(alpha + beta) };
+			*b = { thetaB, len * sin(alpha) / sin(alpha + beta) };
 		}
 		//垂直分量
 		Vector split(Angle thetaV)
@@ -410,7 +467,7 @@ namespace mlib
 		}
 
 		//绘制
-#ifdef EW_NOCLOSE	//easyx.h中的宏定义
+#ifdef EX_SHOWCONSOLE	//easyx.h中的宏定义
 		void draw(Math_F x, Math_F y, Math_F zoom = 1, COLORREF color = RGB(255, 255, 255))
 		{
 			setlinecolor(color);
@@ -430,35 +487,101 @@ namespace mlib
 		}
 #endif
 	};
+	typedef Vector Vec;
 
 	/*****************************************************************************
-	* Rect
-	* 矩形
+	* Line
+	* 直线
 	*****************************************************************************/
-	struct Rect
-	{
-		Math_F left, top, right, bottom;
-	};
-
-	/*****************************************************************************
-	* Point
-	* 点
-	*****************************************************************************/
-	class Point
+	class Line
 	{
 	public:
-		Math_F x, y;
+		//直线用 ax+by+c=0 表示
+		Math_F a, b, c;
 
-		Point()
+		Line()
 		{
-			x = y = 0;
+			a = b = c = 0;
+		}
+		Line(Math_F _a, Math_F _b, Math_F _c)
+		{
+			a = _a;
+			b = _b;
+			c = _c;
+		}
+		Line(Point pt1, Point pt2)
+		{
+			//a(x1-x2)+b(y1-y2)=0
+			if (pt1.x == pt2.x)
+			{
+				b = 0;
+			}
+			else if (pt1.y == pt2.y)
+			{
+				a = 0;
+			}
+			else
+			{
+				//a(x1-x2)=-b(y1-y2)
+				//b=-a(x1-x2)/(y1-y2)
+				a = 1;
+				b = -a * (pt1.x - pt2.x) / (pt1.y - pt2.y);
+			}
+			c = -a * pt1.x - b * pt1.y;
 		}
 
-		//允许隐式收缩转换
-		Point(int _x, int _y)
+		//是否平行于
+		bool is_prl(const Line& l)const
 		{
-			x = _x;
-			y = _y;
+			//不合法情况
+			if (a == 0 && b == 0 || l.a == 0 && l.b == 0)return false;
+
+			//平行于坐标轴的情况
+			if (a == 0 && l.a == 0)return true;
+			if (b == 0 && l.b == 0)return true;
+
+			if (a / b == l.a / l.b)return true;
+			return false;
+		}
+		//是否垂直于
+		bool is_vrt(const Line& l)const
+		{
+			//不合法情况
+			if (a == 0 && b == 0 || l.a == 0 && l.b == 0)return false;
+
+			//平行于坐标轴的情况
+			if (a == 0 && l.b == 0)return true;
+			if (b == 0 && l.a == 0)return true;
+
+			if (a / b * l.a / l.b == -1)return true;
+			return false;
+		}
+
+		//关系运算
+		bool operator==(const Line& l) const
+		{
+			//不合法情况
+			if (a == 0 && b == 0 || l.a == 0 && l.b == 0)return false;
+
+			//平行于坐标轴的情况
+			if (a == 0 && l.a != 0)return false;
+			if (b == 0 && l.b != 0)return false;
+			//平行于x轴, y=-c/b
+			if (a == 0 && c / b == l.c / l.b)return true;
+			//平行于y轴, x=-c/a
+			if (b == 0 && c / a == l.c / l.a)return true;
+
+			//y=-a/b*x-c/b
+			if (a / b == l.a / l.b &&
+				c / b == l.c / l.b)
+			{
+				return true;
+			}
+			return false;
+		}
+		bool operator!=(const Line& l) const
+		{
+			return !(*this == l);
 		}
 	};
 }

@@ -40,7 +40,7 @@ namespace mlib
 		//Ä£
 		Math_F mag()
 		{
-			return sqrt(pow(r, 2) + pow(i, 2));
+			return sqrt(::pow(r, 2) + ::pow(i, 2));
 		}
 
 		//ÔËËã
@@ -73,8 +73,8 @@ namespace mlib
 		Complex operator/(const Complex& b) const
 		{
 			return Complex(
-				(r * b.r + i * b.i) / pow(i, 2) + pow(b.i, 2),
-				(b.r * i - r * b.i) / pow(i, 2) + pow(b.i, 2)
+				(r * b.r + i * b.i) / ::pow(i, 2) + ::pow(b.i, 2),
+				(b.r * i - r * b.i) / ::pow(i, 2) + ::pow(b.i, 2)
 			);
 		}
 

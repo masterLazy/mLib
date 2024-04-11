@@ -17,8 +17,8 @@
 
 #include "mGraphics/image.h"	//图像
 
-#undef max
-#undef min
+/*#undef max
+#undef min*/
 
 #pragma comment(lib,"d2d1.lib")
 #pragma comment(lib,"dwrite.lib")
@@ -206,17 +206,19 @@ namespace mlib
 		};
 		inline static const Font def_font;
 
+		//文本对齐方式(从指定坐标)
+		enum class FontAlign {
+			left_top, top, right_top,
+			left, middle, right,
+			left_bottom, bottom, right_bottom
+		};
 		//绘制文本
-		bool draw_text(float x, float y, const std::wstring& str, Brush_t* brush, Font font = def_font);
+		bool draw_text(float x, float y, const std::wstring& str, Brush_t* brush, FontAlign align = FontAlign::left_top, Font font = def_font);
 		//绘制文本(限定矩形内)
 		bool draw_text(float left, float top, float right, float bottom, const std::wstring& str, Brush_t* brush, Font font = def_font);
 
 		//获取文本所占矩形(相对于绘制原点)
 		Rect get_text_rect(const std::wstring& str, Font font);
-		//居中绘制文本
-		bool draw_text_c(float midX, float midY, const std::wstring& str, Brush_t* brush, Font font = def_font);
-		//只在x方向上居中绘制文本
-		bool draw_text_cx(float midX, float y, const std::wstring& str, Brush_t* brush, Font font = def_font);
 
 
 		/*绘制图形*/
@@ -273,6 +275,7 @@ namespace mlib
 	typedef Graphics::Geometry Geometry;
 	typedef Graphics::FontWeight FontWeight;
 	typedef Graphics::FontStyle FontStyle;
+	typedef Graphics::FontAlign FontAlign;
 	typedef Graphics::Font Font;
 }
 

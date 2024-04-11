@@ -18,8 +18,8 @@ typedef float Func_F;
 #include <iomanip>
 #include <thread>
 
-#undef max
-#undef min
+/*#undef max
+#undef min*/
 
 namespace mlib
 {
@@ -619,7 +619,7 @@ namespace mlib
 		return res;
 	}
 
-	inline Func_F max(Func_F a, Func_F b)
+	/*inline Func_F max(Func_F a, Func_F b)
 	{
 		return a > b ? a : b;
 	}
@@ -634,7 +634,7 @@ namespace mlib
 	template<typename T>inline T min(T a, T b)
 	{
 		return a < b ? a : b;
-	}
+	}*/
 
 	//查找含指定字符串的窗口
 	static HWND _find_hWnd;

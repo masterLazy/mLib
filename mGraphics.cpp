@@ -78,10 +78,12 @@ bool Geometry::init(Graphics& gfx)
 void Geometry::draw(Graphics& gfx, Brush_t* brush, float lineWidth)
 {
 	gfx.pRenderTarget->DrawGeometry(pPathGeometry, brush, lineWidth);
+	brush->Release();
 }
 void Geometry::fill(Graphics& gfx, Brush_t* brush)
 {
 	gfx.pRenderTarget->FillGeometry(pPathGeometry, brush);
+	brush->Release();
 }
 
 bool Geometry::begin_def()
@@ -312,7 +314,7 @@ void Graphics::trans_clear()
 	pRenderTarget->SetTransform(trans);
 }
 
-bool Graphics::draw_text(float x, float y, const std::wstring& str, Brush_t* brush, Font font)
+bool Graphics::draw_text(float x, float y, const std::wstring& str, Brush_t* brush, FontAlign align, Font font)
 {
 	//创建TextFormat
 	IDWriteTextFormat* pTextFormat;
@@ -329,13 +331,30 @@ bool Graphics::draw_text(float x, float y, const std::wstring& str, Brush_t* bru
 	if (!SUCCEEDED(res))
 	{
 		//释放资源
-		pTextFormat->Release();
 		brush->Release();
 		return false;
 	}
 
-	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
-	pRenderTarget->DrawText(str.c_str(), str.size(), pTextFormat, D2D1::RectF(x, y, 1e10, 1e10), brush);
+	//对齐
+	Rect rect = get_text_rect(str, font);
+	float dx = 0, dy = 0;
+	if (align == FontAlign::top || align == FontAlign::middle || align == FontAlign::bottom)
+	{
+		dx = (rect.right - rect.left) / 2;
+	}
+	else if (align == FontAlign::right_top || align == FontAlign::right || align == FontAlign::right_bottom)
+	{
+		dx = rect.right - rect.left;
+	}
+	if (align == FontAlign::left || align == FontAlign::middle || align == FontAlign::right)
+	{
+		dy = (rect.bottom - rect.top) / 2;
+	}
+	else if (align == FontAlign::left_bottom || align == FontAlign::bottom || align == FontAlign::right_bottom)
+	{
+		dy = rect.bottom - rect.top;
+	}
+	pRenderTarget->DrawText(str.c_str(), str.size(), pTextFormat, D2D1::RectF(x - dx, y - dy, 1e10, 1e10), brush);
 
 	//释放资源
 	pTextFormat->Release();
@@ -359,12 +378,10 @@ bool Graphics::draw_text(float left, float top, float right, float bottom, const
 	if (!SUCCEEDED(res))
 	{
 		//释放资源
-		pTextFormat->Release();
 		brush->Release();
 		return false;
 	}
 
-	D2D1_SIZE_F renderTargetSize = pRenderTarget->GetSize();
 	pRenderTarget->DrawText(str.c_str(), str.size(), pTextFormat, D2D1::RectF(left, top, right, bottom), brush);
 
 	//释放资源
@@ -386,7 +403,7 @@ Rect Graphics::get_text_rect(const std::wstring& str, Font font)
 		L"zh-cn",
 		&pTextFormat
 	);
-	if (!SUCCEEDED(res))return {};
+	if (!SUCCEEDED(res)) return {};
 
 	//创建TextLayout
 	IDWriteTextLayout* pTextLayout;
@@ -407,30 +424,10 @@ Rect Graphics::get_text_rect(const std::wstring& str, Font font)
 	pTextFormat->Release();
 	pTextLayout->Release();
 
-	if (!SUCCEEDED(res))return {};
-
 	return { textMetrics.left,
 		textMetrics.top,
 		textMetrics.left + textMetrics.width,
 		textMetrics.top + textMetrics.height };
-}
-bool Graphics::draw_text_c(float midX, float midY, const std::wstring& str, Brush_t* brush, Font font)
-{
-	Rect rect = get_text_rect(str, font);
-
-	return draw_text(
-		midX - (rect.right - rect.left) / 2 + rect.left,
-		midY - (rect.bottom - rect.top) / 2 + rect.top,
-		str, brush, font);
-}
-bool Graphics::draw_text_cx(float midX, float y, const std::wstring& str, Brush_t* brush, Font font)
-{
-	Rect rect = get_text_rect(str, font);
-
-	return draw_text(
-		midX - (rect.right - rect.left) / 2 + rect.left,
-		y,
-		str, brush, font);
 }
 
 void Graphics::draw_line(float x1, float y1, float x2, float y2, Brush_t* brush, float lineWidth)
@@ -565,6 +562,7 @@ bool Graphics::proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool 
 
 	case WM_ERASEBKGND:
 		if (no_erase)return true;
+		return false;
 
 	case WM_MOUSEMOVE:
 		m_x = GET_X_LPARAM(lParam);

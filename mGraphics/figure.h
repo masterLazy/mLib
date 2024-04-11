@@ -29,11 +29,16 @@ namespace mlib
 	* 绘制的项
 	*****************************************************************************/
 
+	enum class FigObjType
+	{
+		plot, scatter, simage
+	};
 	class FigObjBase
 	{
 	public:
+		virtual FigObjType what() = 0;
 		virtual Rect get_rect() = 0;
-		virtual void draw(Graphics& gfx, RECT rDraw, Rect rect) = 0;
+		virtual void draw(Graphics& gfx, Rect rDraw, Rect rect) = 0;
 	};
 	namespace FigObj
 	{
@@ -48,7 +53,7 @@ namespace mlib
 			COLORREF color;
 			float lineWidth;
 		public:
-			Plot() {}
+			Plot() = default;
 			/// <param name="_x">所有点的x坐标</param>
 			/// <param name="_y">所有点的y坐标</param>
 			/// <param name="_color">折线的颜色</param>
@@ -62,9 +67,10 @@ namespace mlib
 				lineWidth = _lineWidth;
 			}
 
+			FigObjType what() { return FigObjType::plot; }
 			Rect get_rect()
 			{
-				Rect temp = { 0 };
+				Rect temp;
 				if (x.empty() || y.empty())
 				{
 					return temp;
@@ -80,7 +86,7 @@ namespace mlib
 				}
 				return temp;
 			}
-			void draw(Graphics& gfx, RECT rDraw, Rect rect)
+			void draw(Graphics& gfx, Rect rDraw, Rect rect)
 			{
 				if (x.empty())return;
 				for (size_t i = 0; i < x.size() - 1; i++)
@@ -114,7 +120,7 @@ namespace mlib
 			COLORREF color;
 			float radius;
 		public:
-			Scatter() {}
+			Scatter() = default;
 			/// <param name="_x">所有点的x坐标</param>
 			/// <param name="_y">所有点的y坐标</param>
 			/// <param name="_color">点的颜色</param>
@@ -128,9 +134,10 @@ namespace mlib
 				radius = _radius;
 			}
 
+			FigObjType what() { return FigObjType::scatter; }
 			Rect get_rect()
 			{
-				Rect temp = { 0 };
+				Rect temp;
 				if (x.empty() || y.empty())
 				{
 					return temp;
@@ -146,7 +153,7 @@ namespace mlib
 				}
 				return temp;
 			}
-			void draw(Graphics& gfx, RECT rDraw, Rect rect)
+			void draw(Graphics& gfx, Rect rDraw, Rect rect)
 			{
 				if (x.empty())return;
 				for (size_t i = 0; i < x.size(); i++)
@@ -174,7 +181,7 @@ namespace mlib
 			unsigned w, h;
 			Cmap cmap;
 		public:
-			Simage() {}
+			Simage() = default;
 			/// <param name="_img">图像</param>
 			/// <param name="width">图像宽度</param>
 			/// <param name="height">图像高度</param>
@@ -204,11 +211,12 @@ namespace mlib
 				}
 			}
 
+			FigObjType what() { return FigObjType::simage; }
 			Rect get_rect()
 			{
 				return { 0,(Math_F)h,(Math_F)w,0 };
 			}
-			void draw(Graphics& gfx, RECT rDraw, Rect rect)
+			void draw(Graphics& gfx, Rect rDraw, Rect rect)
 			{
 				if (img.empty())return;
 				//找最大最小值
@@ -249,13 +257,14 @@ namespace mlib
 		HWND hWnd = NULL;
 		Graphics gfx;
 		bool inited = false;
+
 		std::vector<FigObjBase*> objs;
 		//协调两个线程
 		bool drawing = false;
 		bool editing = false;
 
 		//绘制
-		void draw(RECT rWindow)
+		void draw(Rect rWindow)
 		{
 			drawing = true;
 			int iEdge = max(60, min(rWindow.right, rWindow.bottom) / 10);//边距
@@ -273,12 +282,14 @@ namespace mlib
 					rect.bottom = min(rect.bottom, temp.bottom);
 				}
 			}
-			RECT rDraw = { iEdge + 10,iEdge + 10, rWindow.right - iEdge - 10,rWindow.bottom - iEdge - 10 };
+			Rect rDraw = { iEdge + 10,iEdge + 10, rWindow.right - iEdge - 10,rWindow.bottom - iEdge - 10 };
 			//绘制方框
 			gfx.draw_rectangle(iEdge, iEdge, rWindow.right - iEdge, rWindow.bottom - iEdge, gfx.brush(0, 0, 0));
 			//绘制标题
-			gfx.draw_text_c(rWindow.right / 2.0, iEdge / 2.0, title.c_str(), gfx.brush(0, 0, 0));
+			gfx.draw_text(rWindow.right / 2.0, iEdge / 2.0, title.c_str(), gfx.brush(0, 0, 0),FontAlign::middle);
 			//绘制刻度、网格
+			Font font;
+			font.size *= 0.7;
 			//x轴
 			float tick = 1;
 			if (rect.right - rect.left != 0)
@@ -299,9 +310,9 @@ namespace mlib
 				gfx.draw_line(X, rWindow.bottom - iEdge, X, rWindow.bottom - iEdge + 10, gfx.brush(0, 0, 0));
 				char temp[16];
 				sprintf_s(temp, "%.3g", x);
-				gfx.draw_text_c(X, rWindow.bottom - iEdge + 10,
-					StrToWstr(temp).c_str(),
-					gfx.brush(0, 0, 0));
+				gfx.draw_text(X, rWindow.bottom - iEdge + 10,
+					StrToWstr(temp),
+					gfx.brush(0, 0, 0),FontAlign::top, font);
 				if (bGrid)
 				{
 					gfx.draw_line(X, iEdge, X, rWindow.bottom - iEdge, gfx.brush(0, 0, 0, 0.2));
@@ -327,9 +338,9 @@ namespace mlib
 				gfx.draw_line(iEdge, Y, iEdge - 10, Y, gfx.brush(0, 0, 0));
 				char temp[16];
 				sprintf_s(temp, "%.3g", y);
-				gfx.draw_text(iEdge - 15 - 7.5 * strlen(temp), Y - 10,
-					StrToWstr(temp).c_str(),
-					gfx.brush(0, 0, 0));
+				gfx.draw_text(iEdge - 12, Y - (rect.bottom - rect.top) / 2.0,
+					StrToWstr(temp),
+					gfx.brush(0, 0, 0), FontAlign::right, font);
 				if (bGrid)
 				{
 					gfx.draw_line(iEdge, Y, rWindow.right - iEdge, Y, gfx.brush(0, 0, 0, 0.2));
@@ -502,7 +513,23 @@ namespace mlib
 		//清空
 		void clear()
 		{
-			for (auto i : objs)delete i;
+			for (auto i : objs)
+			{
+				switch (i->what())
+				{
+				case FigObjType::plot:
+					delete (FigObj::Plot*)i;
+					break;
+
+				case FigObjType::scatter:
+					delete (FigObj::Scatter*)i;
+					break;
+
+				case FigObjType::simage:
+					delete (FigObj::Simage*)i;
+					break;
+				}
+			}
 			objs.clear();
 		}
 		//添加要画的东西

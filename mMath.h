@@ -41,15 +41,15 @@ namespace mlib
 
 	class Particle
 	{
-		//private:
-	public:
+	private:
+	//public:
 		typedef double Math_F;
 		Math_F x0, y0;	//上一帧的坐标
 		Math_F x, y;	//坐标
-		Vector F_all;	//当前质点受的所有力
-	//public:
+		Vec F_all;	//当前质点受的所有力
+	public:
 		Math_F m;	//质量
-		Vector v;	//速度
+		Vec v;	//速度
 
 		Particle()
 		{
@@ -134,13 +134,18 @@ namespace mlib
 			return *this;
 		}
 
+		//清空所有力
+		void clr_force()
+		{
+			F_all.clear();
+		}
 		//添加外力
-		void add_force(Vector F_new)
+		void add_force(Vec F_new)
 		{
 			F_all += F_new;
 		}
 		//获取当前质点受力
-		Vector get_force()
+		Vec get_force()
 		{
 			return F_all;
 		}
@@ -165,7 +170,7 @@ namespace mlib
 			y0 = y_temp;
 
 			//计算速度
-			v.set(x0, y0, x, y);
+			v = { x0, y0, x, y };
 
 			//清空所受力
 			F_all.clear();
