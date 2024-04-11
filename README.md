@@ -24,4 +24,4 @@ mLib 收集了一些由 mLazy 编写的代码。他的项目使用这个库。mL
 
 mLib 有2个分支。`classic` 是 mLib 的旧版本，它包括更多的子库，但缺乏维护。在这个分支中，mLazy 删除了一些子库，并对它们进行维护。这一分支的 mLib 更为现代和成熟。
 
-mLazy 打算创建一些其他存储库来代替一些已删除的子库。比如，[LazyWeb](github.com/masterlazy/lazyweb) 代替了 mWeb (在分支 `classic` 中)。
+mLazy 打算创建一些其他存储库来代替一些已删除的子库。比如，[LazyWeb](https://github.com/masterlazy/lazyweb) 代替了 mWeb (在分支 `classic` 中)。
