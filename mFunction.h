@@ -18,21 +18,6 @@ typedef float Func_F;
 #include <iomanip>
 #include <thread>
 
-#ifdef max
-#undef max
-template<typename T> inline T max(T a, T b)
-{
-	return a > b ? a : b;
-}
-#endif
-#ifdef min
-#undef min
-template<typename T> inline T min(T a, T b)
-{
-	return a < b ? a : b;
-}
-#endif
-
 namespace mlib
 {
 	/*****************************************************************************

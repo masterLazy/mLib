@@ -12,7 +12,7 @@ typedef double Math_F;
 #include <vector>
 #include <string>
 
-#include "mMath/num.h"		//多维数组
+//#include "mMath/num.h"		//多维数组
 #include "mMath/geometry.h"	//几何
 #include "mMath/algebra.h"	//代数
 #include "mMath/value.h"	//求值链
