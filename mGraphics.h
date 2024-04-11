@@ -280,3 +280,5 @@ namespace mlib
 }
 
 #include "mGraphics/figure.h"	//¿ÆÑ§»æÍ¼
+
+#include "mGraphics.hpp"
