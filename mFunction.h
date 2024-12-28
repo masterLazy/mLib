@@ -115,29 +115,26 @@ namespace mlib
 			break;
 
 		case PBStyle::block://有Bug!!!
+			int cnt = ceil(rate * 30);
 			cout << "|";
-			cnt = rate * 30;//这个比较特殊
-			for (int i = 0; i < cnt; i++)
-			{
-				if (i == cnt - 1 && cnt != 30)
-				{
-					Func_F rem = rate - (float)cnt / 30;
-					switch (int(rem * 8 * 30))
-					{
-					case 0:printU(L"."); break;
-					case 1:printU(L"▏"); break;
-					case 2:printU(L"▎"); break;
-					case 3:printU(L"▍"); break;
-					case 4:printU(L"▌"); break;
-					case 5:printU(L"▋"); break;
-					case 6:printU(L"▊"); break;
-					case 7:printU(L"▉"); break;
-					}
-				}
-				else printU(L"█");
+			for (int i = 0; i < cnt - 1; i++) {
+				printU(L"█");
 			}
-			for (int i = 0; i < 30 - cnt; i++)
-			{
+			if (cnt > 0) {
+				int rem = 8 - ceil((cnt - rate * 30) * 8);
+				switch (rem) {
+				case 0: printU(L"."); break;
+				case 1: printU(L"▏"); break;
+				case 2: printU(L"▎"); break;
+				case 3: printU(L"▍"); break;
+				case 4: printU(L"▌"); break;
+				case 5: printU(L"▋"); break;
+				case 6: printU(L"▊"); break;
+				case 7: printU(L"▉"); break;
+				default: printU(L"█"); break;
+				}
+			}
+			for (int i = 0; i < 30 - cnt; i++) {
 				cout << ".";
 			}
 			cout << "|";
