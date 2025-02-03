@@ -16,4 +16,4 @@ masterLazy 放弃 classic 分支后，创建了 [LazyWeb](https://github.com/mas
 
 ## 🏷️ Neo
 
-最新的分支，masterLazy 决定把上述几个仓库，连同 [BetterCpp](https://github.com/masterLazy/BetterCpp) 一起合并到其中。并重构 mLib
+最新的分支，masterLazy 决定把上述几个仓库，连同 [BetterCpp](https://github.com/masterLazy/BetterCpp) 一起合并到其中，并重构 mLib。
