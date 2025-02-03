@@ -4,7 +4,7 @@
 
 这是一个标头库，集合了很多实用的功能，使得编写 C++ 代码更轻松。
 
-**“m”**取自 masterLazy 的首字母，**“Lib”**即 Library。
+**“m”** 取自 masterLazy 的首字母，**“Lib”** 即 Library。
 
 现在有两大分支。󠀻󠀻
 
