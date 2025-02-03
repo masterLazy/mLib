@@ -1,27 +1,19 @@
-# mLib
+# ✨ mLib
 
-## 介绍
+### 🎂 本仓库创建时间：2023.2.19。
 
-mLib 收集了一些由 mLazy 编写的代码。他的项目使用这个库。mLib 包括以下子库：
+这是一个标头库，集合了很多实用的功能，使得编写 C++ 代码更轻松。
 
-- ### mFunction
+**“m”**取自 masterLazy 的首字母，**“Lib”**即 Library。
 
-  这是许多小而有用的函数的集合。
+现在有两大分支。󠀻󠀻
 
-- ### mGraphics
+## 🏷️ Classic
 
-  基于Direct2D的图形绘制。包括基础绘图、科学图形和图像渲染。
+这是最早的分支。但是功能很多且缺乏秩序，现已停止维护。但这其中的一些代码片段仍被复用。
 
-- ### mMath
+masterLazy 放弃 classic 分支后，创建了 [LazyWeb](https://github.com/masterLazy/LazyWeb)、[LazyMath](https://github.com/masterLazy/LazyMath)、LazyGUI（未上传 github）等库，继承了原 classic 分支的一些子部件。
 
-  数学对象。包括几何、代数、求值链和高精度数字。
+## 🏷️ Neo
 
-## 运行需要
-
-要运行 mLib，您需要安装Visual C++。
-
-## 现状
-
-mLib 有2个分支。`classic` 是 mLib 的旧版本，它包括更多的子库，但缺乏维护。在这个分支中，mLazy 删除了一些子库，并对它们进行维护。这一分支的 mLib 更为现代和成熟。
-
-mLazy 打算创建一些其他存储库来代替一些已删除的子库。比如，[LazyWeb](https://github.com/masterlazy/lazyweb) 代替了 mWeb (在分支 `classic` 中)。
+最新的分支，masterLazy 决定把上述几个仓库，连同 [BetterCpp](https://github.com/masterLazy/BetterCpp) 一起合并到其中。并重构 mLib
