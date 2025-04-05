@@ -14,13 +14,9 @@
 
 我放弃 classic 分支后，创建了 [LazyWeb](https://github.com/masterLazy/LazyWeb)、[LazyMath](https://github.com/masterLazy/LazyMath)、LazyGUI（未上传 github）等库，继承了原 classic 分支的一些子部件。
 
-## 🏷️ main
+## 🏷️ neo (main)
 
-去除了一些已经分出去的部分。也许不会再维护了。
-
-## 🏷️ Neo
-
-开发中。
+作为主要分支开发中。
 
 根目录下的源文件由各组件共享，各组件的主体放在不同文件夹内。
 
