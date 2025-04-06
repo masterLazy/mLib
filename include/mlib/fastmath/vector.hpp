@@ -3,7 +3,7 @@
 * [抽象接口]
 * 并行加速向量
 */
-#include "fastmath.hpp"
+#include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace fastmath {
 		template <typename Float, typename Derived> class Vector {

@@ -3,7 +3,7 @@
 * [抽象接口]
 * 并行加速设备
 */
-#include "fastmath.hpp"
+#include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace fastmath {
 		template<typename RawDeviceType> class Device {

@@ -3,8 +3,8 @@
 * 进度条
 */
 
-#include "console.hpp"
-#include "function.hpp"
+#include "mlib/console.hpp"
+#include "mlib/function.hpp"
 
 namespace mlib {
 	namespace console {
@@ -26,8 +26,8 @@ namespace mlib {
 			size_t current, total;
 			clock_t begin_time;
 			int width;
-			std::string title;	// 末尾额外添加了一个空格
-			bool is_bytes;			// 工作量的单位是字节
+			std::string title;		// 末尾额外添加了一个空格
+			bool is_bytes = false;	// 工作量的单位是字节
 		public:
 			/// <summary>
 			/// 创建一个进度条
@@ -108,6 +108,10 @@ namespace mlib {
 				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
 				return sec / current * (total - current);
 			}
+			// 获取每秒完成的工作量
+			float get_itps() const {
+				return current / get_time_spent();
+			}
 			// 工作量的单位是字节
 			void work_of_bytes(bool is_work_of_bytes) {
 				is_bytes = is_work_of_bytes;
@@ -164,7 +168,8 @@ namespace mlib {
 					}
 				}
 				// ███████
-				size_t width = this->width - title.size() - strnlen_s(pre, 8) - strnlen_s(suf, 128);
+				int width = this->width - title.size() - strnlen_s(pre, 8) - strnlen_s(suf, 128);
+				width = max(width, 0);
 				float blocks = float(current) / total * width;
 				for (int i = 0; i < int(blocks); i++) {
 					str += block_strs[8];
