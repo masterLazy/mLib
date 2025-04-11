@@ -6,7 +6,7 @@
 * 需要安装 VC++
 * 警告: 从 Visual Studio 2022 版本 17.0 开始，已弃用 C++ AMP 标头。
 */
-#include "fastmath.hpp"
+#include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace amp {
 		class VectorFp16 : public fastmath::Vector<float, VectorFp16> {
