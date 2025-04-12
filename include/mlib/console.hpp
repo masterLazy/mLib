@@ -1,18 +1,21 @@
 #pragma once
-/*
-* [×é¼şÍ·]
-* Console: ÓÃÓÚ¿ØÖÆÌ¨µÄÊµÓÃ¹¤¾ß
-*/
+/**
+ * @file		console.hpp
+ * @brief		ç”¨äºæ§åˆ¶å°çš„å®ç”¨å·¥å…·
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ */
 
 #include <cstdio>
 #include <string>
 #include <sstream>
-// ¶Ô Windows.h Òª×öºÃ³ä×ã·ÀÓù¡£
+ // å¯¹ Windows.h è¦åšå¥½å……è¶³é˜²å¾¡ã€‚
 namespace win {
 #include <Windows.h>
 }
 #undef min
 #undef max
 
-#include "console/screen.hpp"			// »ñÈ¡ºÍ²Ù¿Ø¿ØÖÆÌ¨ÆÁÄ»ĞÅÏ¢
-#include "console/progressbar.hpp"		// ½ø¶ÈÌõ
+#include "console/screen.hpp"
+#include "console/progressbar.hpp"

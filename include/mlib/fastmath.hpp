@@ -1,17 +1,23 @@
 #pragma once
-/*
-* [组件头]
-* Fastmath: 基于多种后端的并行加速数学库
-*/
+/**
+ * @file		fastmath.hpp
+ * @brief		鍩轰簬澶氱鍚庣鐨勫苟琛屽姞閫熸暟瀛﹀簱
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ */
+
 #include <vector>
 #include "result.hpp"
 #include "fastmath/device.hpp"
 #include "fastmath/vector.hpp"
 
-// C++ AMP 后端 (开发中)
+ /**
+  * @brief   C++ AMP 鍚庣
+  */
 #ifdef FASTMATH_AMP
 #define _SILENCE_AMP_DEPRECATION_WARNINGS
 #include <amp.h>
 #include "fastmath/amp/amp_device.hpp"
 #include "fastmath/amp/amp_vector_fp16.hpp"
-#endif // FASTMATH_HPP
+#endif // FASTMATH_AMP

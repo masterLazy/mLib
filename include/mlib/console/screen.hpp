@@ -1,8 +1,13 @@
 #pragma once
-/*
-* 获取和操控控制台屏幕信息
-*/
-#include "../console.hpp"
+/**
+ * @file		screen.hpp
+ * @brief		获取和操控控制台屏幕信息
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ */
+
+#include "mlib/console.hpp"
 
 namespace mlib {
 	namespace console {

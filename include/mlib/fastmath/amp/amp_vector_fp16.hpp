@@ -1,25 +1,30 @@
 #pragma once
-/*
-* C++ AMP (Accelerated Massive Parallelism) ºó¶Ë
-* µ¥¾«¶È¸¡µã(fp16)ÏòÁ¿
-*
-* ĞèÒª°²×° VC++
-* ¾¯¸æ: ´Ó Visual Studio 2022 °æ±¾ 17.0 ¿ªÊ¼£¬ÒÑÆúÓÃ C++ AMP ±êÍ·¡£
-*/
+/**
+ * @file 		amp_fp16.hpp
+ * @brief		å•ç²¾åº¦æµ®ç‚¹(fp16)å‘é‡
+ * @details		C++ AMP (Accelerated Massive Parallelism)
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ *
+ * @note		éœ€è¦å®‰è£…VC++
+ * @warning		ä»Visual Studio 2022ç‰ˆæœ¬17.0å¼€å§‹ï¼Œå·²å¼ƒç”¨C++ AMPæ ‡å¤´ã€‚
+ */
+
 #include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace amp {
 		class VectorFp16 : public fastmath::Vector<float, VectorFp16> {
-			concurrency::array_view<float, 1> *gpuArray;
+			concurrency::array_view<float, 1>* gpuArray;
 			std::vector<float> cpuArray;
 			typedef VectorFp16 Vector;
 		public:
-			// ´´½¨ÏòÁ¿(ÔÚCPUÉÏ)
+			// åˆ›å»ºå‘é‡(åœ¨CPUä¸Š)
 			VectorFp16(size_t size) {
 				cpuArray.resize(size);
 				gpuArray = new concurrency::array_view<float, 1>(size, cpuArray);
 			}
-			// Í¨¹ı¿½±´´´½¨ÏòÁ¿(ÔÚCPUÉÏ)
+			// é€šè¿‡æ‹·è´åˆ›å»ºå‘é‡(åœ¨CPUä¸Š)
 			VectorFp16(std::vector<float> source) {
 				cpuArray = source;
 				gpuArray = new concurrency::array_view<float, 1>(size(), cpuArray);
@@ -33,12 +38,12 @@ namespace mlib {
 				return cpuArray.size();
 			}
 
-			// ½«Êı¾İ¼ÓÔØµ½²¢ĞĞ¼ÆËãÉè±¸
+			// å°†æ•°æ®åŠ è½½åˆ°å¹¶è¡Œè®¡ç®—è®¾å¤‡
 			Vector& toDevice(Device device = getDefaultDevice(), Result* res = nullptr) {
 				gpuArray->synchronize_to(device.device.create_view());
 				return *this;
 			}
-			// ½«Êı¾İÍ¬²½µ½CPU
+			// å°†æ•°æ®åŒæ­¥åˆ°CPU
 			Vector& toCpu(Result* res = nullptr) {
 				gpuArray->synchronize();
 				return *this;

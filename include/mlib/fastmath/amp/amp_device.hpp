@@ -1,11 +1,16 @@
 #pragma once
-/*
-* C++ AMP (Accelerated Massive Parallelism) ºó¶Ë
-* ²¢ĞĞ¼ÆËãÉè±¸
-*
-* ĞèÒª°²×° VC++
-* ¾¯¸æ: ´Ó Visual Studio 2022 °æ±¾ 17.0 ¿ªÊ¼£¬ÒÑÆúÓÃ C++ AMP ±êÍ·¡£
-*/
+/**
+ * @file 		amp_device.hpp
+ * @brief		AMPè®¾å¤‡
+ * @details		C++ AMP (Accelerated Massive Parallelism)
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ *
+ * @note		éœ€è¦å®‰è£…VC++
+ * @warning		ä»Visual Studio 2022ç‰ˆæœ¬17.0å¼€å§‹ï¼Œå·²å¼ƒç”¨C++ AMPæ ‡å¤´ã€‚
+ */
+
 #include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace fastmath {
@@ -30,7 +35,7 @@ namespace mlib {
 					return !device.is_emulated;
 				}
 			};
-			// »ñÈ¡ËùÓĞÉè±¸
+			// è·å–æ‰€æœ‰è®¾å¤‡
 			std::vector<Device> getDevices() {
 				using namespace concurrency;
 				std::vector<Device> devices;
@@ -40,7 +45,7 @@ namespace mlib {
 				}
 				return devices;
 			}
-			// »ñÈ¡Ä¬ÈÏÉè±¸
+			// è·å–é»˜è®¤è®¾å¤‡
 			Device getDefaultDevice() {
 				return getDevices()[0];
 			}

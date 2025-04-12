@@ -1,22 +1,26 @@
 #pragma once
-/*
-* [¹²Ïí×é¼ş]
-* ÔÓÀàº¯Êı
-*/
+/**
+ * @file		fuction.hpp
+ * @brief		æ‚é¡¹å‡½æ•°
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ */
 
 #include <iostream>
 #include <sstream>		// ostringstream
 #include <iomanip>		// setprecision()
+#include <sys/stat.h>	// stat
 
 namespace mlib {
 	namespace funciton {
-		/// <summary>
-		/// ×Ö½ÚÊı×ª×Ö·û´®
-		/// </summary>
-		/// <param name="bytes">×Ö½ÚÊı</param>
-		/// <param name="precision">±£Áô¼¸Î»Ğ¡Êı</param>
-		/// <param name="i_style">ÊÇ·ñÊ¹ÓÃÈç"KiB"µÄÑùÊ½</param>
-		/// <returns></returns>
+		/**
+		 * @brief				å­—ç¬¦æ•°è½¬å­—ç¬¦ä¸²
+		 * @param bytes			å­—èŠ‚æ•°
+		 * @param precision		ä¿ç•™å‡ ä½å°æ•°
+		 * @param i_style		æ˜¯å¦ä½¿ç”¨å¦‚"KiB"çš„æ ·å¼
+		 * @return				å­—ç¬¦ä¸²è½¬æ¢ç»“æœ
+		 */
 		std::string byte_to_string(float bytes, int precision = 2, bool i_style = true) {
 			std::ostringstream oss;
 			oss.setf(std::ios::fixed, std::ios::floatfield);
@@ -39,10 +43,31 @@ namespace mlib {
 				oss << std::setprecision(precision) << bytes << (i_style ? "GiB" : "GB");
 				return oss.str();
 			}
-			// ÕæµÄÄÜÖ´ĞĞµ½ÕâÀïÂğ
 			oss << std::setprecision(precision) << bytes / 1024 << (i_style ? "TiB" : "TB");
 			return oss.str();
 		}
 
+		/**
+		 * @brief			è·å–æ–‡ä»¶å¤§å°
+		 * @param filename	è¦è·å–å¤§å°çš„æ–‡ä»¶å
+		 * @return			æŒ‡å®šçš„æ–‡ä»¶çš„å¤§å°
+		 */
+		size_t get_file_size(const std::string& filename) {
+			struct stat statBuf;
+			stat(filename.c_str(), &statBuf);
+			return statBuf.st_size;
+		}
+		/**
+		 * @brief			è·å–æ–‡ä»¶å¤§å°
+		 * @param file		è¦è·å–å¤§å°çš„æ–‡ä»¶æŒ‡é’ˆ
+		 * @return			æŒ‡å®šçš„æ–‡ä»¶çš„å¤§å°
+		 */
+		size_t get_file_size(FILE* file) {
+			size_t off = _ftelli64(file);
+			_fseeki64(file, -1, 0);
+			size_t size = _ftelli64(file);
+			_fseeki64(file, 0, off);
+			return size;
+		}
 	} // namespace function
 } // namespace mlib
