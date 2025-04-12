@@ -11,37 +11,40 @@
 
 namespace mlib {
 	namespace console {
-		/// <summary>
-		/// 获取屏幕信息
-		/// </summary>
+		/**
+		* @brief	获取屏幕信息
+		* @return	CONSOLE_SCREEN_BUFFER_INFO
+		*/
 		inline win::CONSOLE_SCREEN_BUFFER_INFO get_screen_info() {
 			using namespace win;
 			CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
 			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
 			return bufferInfo;
 		}
-		/// <summary>
-		/// 获取屏幕宽度(字符数)
-		/// </summary>
+		/**
+		* @brief	获取屏幕宽度
+		* @return	屏幕宽度(字符数)
+		*/
 		inline short get_width() {
 			return get_screen_info().dwSize.X;
 		}
-		/// <summary>
-		/// 获取屏幕高度(字符数)
-		/// </summary>
+		/**
+		* @brief	获取屏幕高度
+		* @return	屏幕高度(字符数)
+		*/
 		inline short get_height() {
 			return get_screen_info().dwSize.Y;
 		}
-		/// <summary>
-		/// 清空光标所在行
-		/// </summary>
+		/**
+		* @brief	清空光标所在行
+		*/
 		inline void clear_line() {
 			fputs("\033[2K\r", stdout);
 			fflush(stdout);
 		}
-		/// <summary>
-		/// 清空屏幕
-		/// </summary>
+		/**
+		* @brief	清空屏幕
+		*/
 		inline bool clear_screen() {
 			using namespace win;
 			/* https://learn.microsoft.com/zh-cn/windows/console/clearing-the-screen */
