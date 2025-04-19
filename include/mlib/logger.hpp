@@ -18,7 +18,8 @@ namespace mlib {
 			debug = 0,
 			info = 1,
 			warn = 2,
-			error = 3
+			error = 3,
+			fatal = 4
 		};
 		/**
 		* @brief	简单的日志类
@@ -46,8 +47,12 @@ namespace mlib {
 					if (color) os << console::f_red;
 					os << "[ERROR";
 					break;
+				case logger::fatal:
+					if (color) os << console::f_red << console::f_udl;
+					os << "[FATAL";
+					break;
 				}
-				os << "]\t" << msg << endl;
+				os << "] " << msg << endl;
 				if (color) os << console::f_reset;
 			}
 		public:
@@ -60,21 +65,25 @@ namespace mlib {
 				log_level(log_level), color(color), os(os) {
 			}
 
-			/** @brief 记录 debug 信息 */
+			/** @brief 调试信息 */
 			void debug(const std::string& msg) const {
 				log(logger::debug, msg);
 			}
-			/** @brief 记录 info 信息 */
+			/** @brief 一般信息 */
 			void info(const std::string& msg) const {
 				log(logger::info, msg);
 			}
-			/** @brief 记录 warn 信息 */
+			/** @brief 警告 */
 			void warn(const std::string& msg) const {
 				log(logger::warn, msg);
 			}
-			/** @brief 记录 error 信息 */
+			/** @brief 错误 */
 			void error(const std::string& msg) const {
 				log(logger::error, msg);
+			}
+			/** @brief 致命错误 */
+			void fatal(const std::string& msg) const {
+				log(logger::fatal, msg);
 			}
 		};
 	} // namespace logger

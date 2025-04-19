@@ -1,14 +1,14 @@
 #pragma once
 /**
  * @file 		amp_device.hpp
- * @brief		AMP??
+ * @brief		AMP设备
  * @details		C++ AMP (Accelerated Massive Parallelism)
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
  *
- * @note		????VC++
- * @warning		?Visual Studio 2022??17.0??, ???C++ AMP???
+ * @note		需要安装VC++
+ * @warning		从Visual Studio 2022版本17.0开始, 已弃用C++ AMP标头。
  */
 
 #include "mlib/fastmath.hpp"
@@ -35,7 +35,7 @@ namespace mlib {
 					return !device.is_emulated;
 				}
 			};
-			// ??????
+			// 获取所有设备
 			std::vector<Device> getDevices() {
 				using namespace concurrency;
 				std::vector<Device> devices;
@@ -45,7 +45,7 @@ namespace mlib {
 				}
 				return devices;
 			}
-			// ??????
+			// 获取默认设备
 			Device getDefaultDevice() {
 				return getDevices()[0];
 			}

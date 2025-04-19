@@ -146,9 +146,10 @@ namespace mlib {
 			 */
 			ProgressBar& print(bool clear_line = true) {
 				if (clear_line) {
-					console::clear_line();
+					// console::clear_line();
+					cout << "\r";
 				}
-				fputs(to_string().c_str(), stdout);
+				cout << to_string();
 				return *this;
 			}
 
