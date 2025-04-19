@@ -1,25 +1,30 @@
 #pragma once
-/*
-* C++ AMP (Accelerated Massive Parallelism) 后端
-* 单精度浮点(fp16)向量
-*
-* 需要安装 VC++
-* 警告: 从 Visual Studio 2022 版本 17.0 开始，已弃用 C++ AMP 标头。
-*/
+/**
+ * @file 		amp_fp16.hpp
+ * @brief		?????(fp16)??
+ * @details		C++ AMP (Accelerated Massive Parallelism)
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ *
+ * @note		????VC++
+ * @warning		?Visual Studio 2022??17.0??, ???C++ AMP???
+ */
+
 #include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace amp {
 		class VectorFp16 : public fastmath::Vector<float, VectorFp16> {
-			concurrency::array_view<float, 1> *gpuArray;
+			concurrency::array_view<float, 1>* gpuArray;
 			std::vector<float> cpuArray;
 			typedef VectorFp16 Vector;
 		public:
-			// 创建向量(在CPU上)
+			// ????(?CPU?)
 			VectorFp16(size_t size) {
 				cpuArray.resize(size);
 				gpuArray = new concurrency::array_view<float, 1>(size, cpuArray);
 			}
-			// 通过拷贝创建向量(在CPU上)
+			// ????????(?CPU?)
 			VectorFp16(std::vector<float> source) {
 				cpuArray = source;
 				gpuArray = new concurrency::array_view<float, 1>(size(), cpuArray);
@@ -33,12 +38,12 @@ namespace mlib {
 				return cpuArray.size();
 			}
 
-			// 将数据加载到并行计算设备
+			// ????????????
 			Vector& toDevice(Device device = getDefaultDevice(), Result* res = nullptr) {
 				gpuArray->synchronize_to(device.device.create_view());
 				return *this;
 			}
-			// 将数据同步到CPU
+			// ??????CPU
 			Vector& toCpu(Result* res = nullptr) {
 				gpuArray->synchronize();
 				return *this;

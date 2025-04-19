@@ -1,11 +1,16 @@
 #pragma once
-/*
-* C++ AMP (Accelerated Massive Parallelism) 后端
-* 并行计算设备
-*
-* 需要安装 VC++
-* 警告: 从 Visual Studio 2022 版本 17.0 开始，已弃用 C++ AMP 标头。
-*/
+/**
+ * @file 		amp_device.hpp
+ * @brief		AMP??
+ * @details		C++ AMP (Accelerated Massive Parallelism)
+ *
+ * @author		masterLazy
+ * @copyright	Copyright (c) 2025 masterLazy
+ *
+ * @note		????VC++
+ * @warning		?Visual Studio 2022??17.0??, ???C++ AMP???
+ */
+
 #include "mlib/fastmath.hpp"
 namespace mlib {
 	namespace fastmath {
@@ -30,7 +35,7 @@ namespace mlib {
 					return !device.is_emulated;
 				}
 			};
-			// 获取所有设备
+			// ??????
 			std::vector<Device> getDevices() {
 				using namespace concurrency;
 				std::vector<Device> devices;
@@ -40,7 +45,7 @@ namespace mlib {
 				}
 				return devices;
 			}
-			// 获取默认设备
+			// ??????
 			Device getDefaultDevice() {
 				return getDevices()[0];
 			}
