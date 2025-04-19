@@ -2,6 +2,7 @@
 /**
  * @file		progressbar.hpp
  * @brief		进度条
+ * @details		类tdqm样式
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -12,7 +13,7 @@
 
 namespace mlib {
 	namespace console {
-		const std::string block_strs[9] = {
+		const std::string __block_strs[9] = {
 			"",			// 空
 			"\u258f",	// 左 1/8
 			"\u258e",	// 左 2/8
@@ -36,8 +37,8 @@ namespace mlib {
 			/**
 			 * @brief					创建一个进度条
 			 * @param total_of_work		总工作量
-			 * @param initial_position	初始位置，即初始进度
-			 * @param width				进度条的宽度，默认(-1)则自动匹配控制台宽度
+			 * @param initial_position	初始位置, 即初始进度
+			 * @param width				进度条的宽度, 默认(-1)则自动匹配控制台宽度
 			 */
 			ProgressBar(size_t total_of_work, size_t initial_position = 0, int width = -1) {
 				current = initial_position;
@@ -54,8 +55,8 @@ namespace mlib {
 			 * @brief					创建一个进度条
 			 * @param title				进度条标题
 			 * @param total_of_work		总工作量
-			 * @param initial_position	初始位置，即初始进度
-			 * @param width				进度条的宽度，默认(-1)则自动匹配控制台宽度
+			 * @param initial_position	初始位置, 即初始进度
+			 * @param width				进度条的宽度, 默认(-1)则自动匹配控制台宽度
 			 */
 			ProgressBar(const std::string& title, size_t total_of_work, size_t initial_position = 0, int width = -1) {
 				current = initial_position;
@@ -69,9 +70,7 @@ namespace mlib {
 				this->title = title + ' ';
 			}
 
-			/**
-			 * @brief	重置进度条
-			 */
+			/** @brief	重置进度条 */
 			void reset() {
 				current = 0;
 				begin_time = clock();
@@ -110,17 +109,11 @@ namespace mlib {
 			void set_width(size_t width) {
 				this->width = width;
 			}
-			/**
-			 * @brief		获取进度
-			 * @return		当前完成的工作量
-			 */
+			/** @brief		获取当前完成的工作量  */
 			size_t get_current() const {
 				return current;
 			}
-			/**
-			 * @brief		获取总工作量
-			 * @return		总工作量
-			 */
+			/**  @brief		获取总工作量 */
 			size_t get_total() const {
 				return total;
 			}
@@ -131,18 +124,12 @@ namespace mlib {
 			int get_time_spent() const {
 				return float(clock() - begin_time) / CLOCKS_PER_SEC;
 			}
-			/**
-			 * @brief		获取估计剩余时间
-			 * @return		估计剩余时间(s)
-			 */
+			/**  @brief		获取估计剩余时间(s) */
 			int get_eta() const {
 				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
 				return sec / current * (total - current);
 			}
-			/**
-			 * @brief		获取每秒完成的工作量
-			 * @return		每秒完成的工作量
-			 */
+			/** @brief		获取每秒完成的工作量 */
 			float get_itps() const {
 				return current / get_time_spent();
 			}
@@ -154,14 +141,15 @@ namespace mlib {
 				is_bytes = is_work_of_bytes;
 			}
 			/**
-			 * @brief		打印进度条
+			 * @brief		用cout打印进度条
 			 * @return		进度条自身
 			 */
 			ProgressBar& print(bool clear_line = true) {
 				if (clear_line) {
-					console::clear_line();
+					// console::clear_line();
+					cout << "\r";
 				}
-				fputs(to_string().c_str(), stdout);
+				cout << to_string();
 				return *this;
 			}
 
@@ -169,7 +157,6 @@ namespace mlib {
 
 			/**
 			 * @brief		获取进度条字符串
-			 * @return		进度条字符串
 			 * @example		100%|█████████| 128/128 [00:02<00:00, 58.55it/s]
 			 */
 			std::string to_string() {
@@ -212,9 +199,9 @@ namespace mlib {
 				width = max(width, 0);
 				float blocks = float(current) / total * width;
 				for (int i = 0; i < int(blocks); i++) {
-					str += block_strs[8];
+					str += __block_strs[8];
 				}
-				str += block_strs[int((blocks - int(blocks)) * 8)];
+				str += __block_strs[int((blocks - int(blocks)) * 8)];
 				for (int i = 0;
 					i < width - int(blocks) - (int((blocks - int(blocks)) * 8) == 0 ? 0 : 1);
 					i++) {

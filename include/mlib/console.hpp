@@ -17,5 +17,9 @@ namespace win {
 #undef min
 #undef max
 
+#include "console/printer.hpp"
+
+#include "console/csi.hpp"
 #include "console/screen.hpp"
+
 #include "console/progressbar.hpp"

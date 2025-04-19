@@ -12,7 +12,7 @@ namespace mlib {
 	namespace fastmath {
 		/**
 		 * @brief			并行加速向量抽象接口
-		 * @details			作为向量的基类，要求实现基本运算功能。使用了奇异递归模板模式(CRTP)
+		 * @details			作为向量的基类, 要求实现基本运算功能。使用了奇异递归模板模式(CRTP)
 		 * @param Float		向量的浮点类型
 		 * @param Derived	派生类自身
 		 */

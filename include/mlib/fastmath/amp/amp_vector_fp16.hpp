@@ -8,7 +8,7 @@
  * @copyright	Copyright (c) 2025 masterLazy
  *
  * @note		需要安装VC++
- * @warning		从Visual Studio 2022版本17.0开始，已弃用C++ AMP标头。
+ * @warning		从Visual Studio 2022版本17.0开始, 已弃用C++ AMP标头。
  */
 
 #include "mlib/fastmath.hpp"
