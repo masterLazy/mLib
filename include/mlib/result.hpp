@@ -34,7 +34,6 @@ namespace mlib {
 
 			/**
 			 * @brief 	包装一个成功状态
-			 * @return	包装结果
 			 */
 			static const Result sucess(std::string msg = "") {
 				return Result(State::success, msg);
@@ -42,7 +41,6 @@ namespace mlib {
 
 			/**
 			 * @brief 	包装一个失败状态
-			 * @return	包装结果
 			 */
 			static const Result fail(std::string msg = "") {
 				return Result(State::fail, msg);
@@ -50,7 +48,6 @@ namespace mlib {
 
 			/**
 			 * @brief 	包装一个忽略状态
-			 * @return	包装结果
 			 */
 			static const Result pass(std::string msg = "") {
 				return Result(State::pass, msg);
@@ -67,7 +64,6 @@ namespace mlib {
 
 			/**
 			 * @brief	操作是否被忽略
-			 * @return	判断结果
 			 */
 			bool isPass() const {
 				return state == State::pass;
@@ -75,7 +71,6 @@ namespace mlib {
 
 			/**
 			 * @brief	获取状态信息
-			 * @return	状态信息
 			 */
 			std::string what() const {
 				return msg;
@@ -83,7 +78,7 @@ namespace mlib {
 		};
 
 		/**
-		 * @brief		包装一个成功状态，存到指定指针中
+		 * @brief		包装一个成功状态, 存到指定指针中
 		 * @param res	存储状态的指针
 		 */
 		void handlerSuccess(Result* res, std::string msg = "") {
@@ -91,7 +86,7 @@ namespace mlib {
 		}
 
 		/**
-		 * @brief		包装一个失败状态，存到指定指针中
+		 * @brief		包装一个失败状态, 存到指定指针中
 		 * @param res	存储状态的指针
 		 */
 		void handlerFail(Result* res, std::string msg = "") {
@@ -99,7 +94,7 @@ namespace mlib {
 		}
 
 		/**
-		 * @brief		包装一个忽略状态，存到指定指针中
+		 * @brief		包装一个忽略状态, 存到指定指针中
 		 * @param res	存储状态的指针
 		 */
 		void handlerPass(Result* res, std::string msg = "") {

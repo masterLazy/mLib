@@ -19,9 +19,8 @@ namespace mlib {
 		 * @param bytes			字节数
 		 * @param precision		保留几位小数
 		 * @param i_style		是否使用如"KiB"的样式
-		 * @return				字符串转换结果
 		 */
-		std::string byte_to_string(float bytes, int precision = 2, bool i_style = true) {
+		inline std::string byte_to_string(float bytes, int precision = 2, bool i_style = true) {
 			std::ostringstream oss;
 			oss.setf(std::ios::fixed, std::ios::floatfield);
 			if (bytes <= 999) {
@@ -49,20 +48,9 @@ namespace mlib {
 
 		/**
 		 * @brief			获取文件大小
-		 * @param filename	要获取大小的文件名
-		 * @return			指定的文件的大小
-		 */
-		size_t get_file_size(const std::string& filename) {
-			struct stat statBuf;
-			stat(filename.c_str(), &statBuf);
-			return statBuf.st_size;
-		}
-		/**
-		 * @brief			获取文件大小
 		 * @param file		要获取大小的文件指针
-		 * @return			指定的文件的大小
 		 */
-		size_t get_file_size(FILE* file) {
+		inline size_t get_file_size(FILE* file) {
 			size_t off = _ftelli64(file);
 			_fseeki64(file, -1, 0);
 			size_t size = _ftelli64(file);
