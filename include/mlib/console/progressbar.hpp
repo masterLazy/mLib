@@ -147,9 +147,9 @@ namespace mlib {
 			ProgressBar& print(bool clear_line = true) {
 				if (clear_line) {
 					// console::clear_line();
-					cout << "\r";
+					std::cout << "\r";
 				}
-				cout << to_string();
+				std::cout << to_string();
 				return *this;
 			}
 
@@ -170,7 +170,7 @@ namespace mlib {
 				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
 				size_t eta = sec / current * (total - current);
 				if (is_bytes) {
-					if (current == 0 || sec == 0) {
+					if (current == 0 or sec == 0 or eta < 0) {
 						sprintf_s(suf, "| %s/%s [%02ld:%02ld<?, ?B/s]",
 							funciton::byte_to_string(current).c_str(),
 							funciton::byte_to_string(total).c_str(),
@@ -183,7 +183,7 @@ namespace mlib {
 							funciton::byte_to_string(current / sec).c_str());
 					}
 				} else {
-					if (current == 0 || sec == 0) {
+					if (current == 0 or sec == 0 or eta < 0) {
 						sprintf_s(suf, "| %ld/%ld [%02d:%02d<?, ?it/s]",
 							current, total, int(sec) / 60, int(sec) % 60);
 					} else if (current > sec) { // it/s

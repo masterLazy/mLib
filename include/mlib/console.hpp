@@ -7,13 +7,11 @@
  * @copyright	Copyright (c) 2025 masterLazy
  */
 
-#include <cstdio>
+#include <iostream>
 #include <string>
 #include <sstream>
- // 对 Windows.h 要做好充足防御。
-namespace win {
+
 #include <Windows.h>
-}
 #undef min
 #undef max
 

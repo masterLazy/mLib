@@ -13,7 +13,7 @@
 #include <sys/stat.h>	// stat
 
 namespace mlib {
-	namespace funciton {
+	namespace function {
 		/**
 		 * @brief				字符数转字符串
 		 * @param bytes			字节数
