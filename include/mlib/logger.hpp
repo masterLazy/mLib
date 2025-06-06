@@ -52,7 +52,7 @@ namespace mlib {
 					os << "[FATAL";
 					break;
 				}
-				os << "] " << msg << endl;
+				os << "] " << msg << std::endl;
 				if (color) os << console::f_reset;
 			}
 		public:

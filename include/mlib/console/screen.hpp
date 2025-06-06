@@ -14,8 +14,7 @@ namespace mlib {
 		/**
 		* @brief	获取屏幕信息
 		*/
-		inline win::CONSOLE_SCREEN_BUFFER_INFO get_screen_info() {
-			using namespace win;
+		inline CONSOLE_SCREEN_BUFFER_INFO get_screen_info() {
 			CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
 			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
 			return bufferInfo;
