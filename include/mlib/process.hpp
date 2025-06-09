@@ -26,11 +26,16 @@ namespace mlib {
 		public:
 			/**
 			* @brief				实例化进程
+			* @param file_name		要执行的文件 (可以为空)
 			* @param command_line	要执行的命令行
-			* @param show_window	是否要显示窗口
+			* @param show_window	是否显示窗口
 			* @exception std::exception 此函数会抛出异常！
 			*/
-			Process(const std::string& command_line, bool show_window = false) {
+			Process(
+				const std::string& file_name,
+				const std::string& command_line,
+				const std::string& working_dir = "",
+				bool show_window = false) {
 				// 创建管道
 				SECURITY_ATTRIBUTES se = { 0 };
 				se.lpSecurityDescriptor = NULL;
@@ -49,11 +54,19 @@ namespace mlib {
 				sInfo.hStdInput = to_hRead;
 				sInfo.hStdOutput = from_hWrite;
 				sInfo.hStdError = from_hWrite;
-				if (CreateProcessA(NULL, (char*)command_line.c_str(), NULL, NULL, TRUE, NULL, NULL, NULL, &sInfo, &process_info) == 0) {
+				if (CreateProcessA(
+					file_name.empty() ? NULL : file_name.c_str(),
+					command_line.empty() ? NULL : (char*)command_line.c_str(),
+					NULL, NULL, TRUE, NULL, NULL,
+					working_dir.empty() ? NULL : working_dir.c_str(),
+					&sInfo, &process_info) == 0) {
 					throw std::exception("Failed to create process");
 				}
 			}
 			~Process() {
+				if (getExitCode() == STILL_ACTIVE) {
+					kill();
+				}
 				if (to_hWrite) {
 					CloseHandle(to_hWrite);
 				}
@@ -113,7 +126,7 @@ namespace mlib {
 			* @return				实际读取的字节数
 			* @exception std::exception 读取失败时抛出异常
 			*/
-			std::string readline(DWORD max_bytes = 1024) {
+			std::string getline(DWORD max_bytes = 1024) {
 				DWORD bytes_read;
 				std::string res;
 				char buf;
@@ -121,7 +134,7 @@ namespace mlib {
 					if (ReadFile(from_hRead, &buf, 1, &bytes_read, NULL) == 0) {
 						throw std::exception("Failed to read from pipe");
 					}
-					if (buf == '\r' or buf == '\n') {
+					if (buf == '\r' || buf == '\n') {
 						if (res.empty()) {
 							continue;
 						} else return res;
@@ -134,7 +147,7 @@ namespace mlib {
 			* @brief				获取进程的返回值
 			* @retval STILL_ACTIVE	进程未退出
 			*/
-			DWORD get_exit_code() {
+			DWORD getExitCode() {
 				DWORD code;
 				GetExitCodeProcess(process_info.hProcess, &code);
 				return code;
@@ -142,7 +155,7 @@ namespace mlib {
 			/**
 			* @brief	强制终止进程
 			*/
-			void terminate(UINT exit_code = 0) {
+			void kill(UINT exit_code = 0) {
 				TerminateProcess(process_info.hProcess, exit_code);
 			}
 		};

@@ -22,7 +22,7 @@ namespace mlib {
 				str = pre + std::to_string(i) + post;
 			}
 			/** @brief	转换到字符串 */
-			std::string to_string() const {
+			std::string toString() const {
 				return str;
 			}
 			/** @brief	用<<重载打印 */

@@ -14,7 +14,7 @@ namespace mlib {
 		/**
 		* @brief	获取屏幕信息
 		*/
-		inline CONSOLE_SCREEN_BUFFER_INFO get_screen_info() {
+		inline CONSOLE_SCREEN_BUFFER_INFO getScreenInfo() {
 			CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
 			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
 			return bufferInfo;
@@ -23,15 +23,15 @@ namespace mlib {
 		* @brief	获取屏幕宽度
 		* @return	屏幕宽度(字符数)
 		*/
-		inline short get_width() {
-			return get_screen_info().dwSize.X;
+		inline short getWidth() {
+			return getScreenInfo().dwSize.X;
 		}
 		/**
 		* @brief	获取屏幕高度
 		* @return	屏幕高度(字符数)
 		*/
-		inline short get_height() {
-			return get_screen_info().dwSize.Y;
+		inline short getHeight() {
+			return getScreenInfo().dwSize.Y;
 		}
 	} // namespace console
 } // namespace mlib

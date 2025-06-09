@@ -36,24 +36,24 @@ namespace mlib {
 					os << "[DEBUG";
 					break;
 				case logger::info:
-					if (color) os << console::f_cyan;
+					if (color) os << console::fCyan;
 					os << "[INFO";
 					break;
 				case logger::warn:
-					if (color) os << console::f_yellow;
+					if (color) os << console::fYellow;
 					os << "[WARN";
 					break;
 				case logger::error:
-					if (color) os << console::f_red;
+					if (color) os << console::fRed;
 					os << "[ERROR";
 					break;
 				case logger::fatal:
-					if (color) os << console::f_red << console::f_udl;
+					if (color) os << console::fRed << console::fUdl;
 					os << "[FATAL";
 					break;
 				}
 				os << "] " << msg << std::endl;
-				if (color) os << console::f_reset;
+				if (color) os << console::fReset;
 			}
 		public:
 			/**
