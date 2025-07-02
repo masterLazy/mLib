@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file		process.hpp
- * @brief		°ü×°Ò»¸ö½ø³Ì£¬¿ÉÒÔ¶ÔÆä½øĞĞ Std I/O ²Ù×÷
+ * @brief		è¿›ç¨‹åŒ…è£…å™¨
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -11,152 +11,169 @@
 #undef min
 #undef max
 #include <string>
-#include <exception>
+#include <stdexcept>
+#include <thread>
+#include <mutex>
 
 namespace mlib {
-	namespace process {
-		/**
-		 * @brief	°ü×°Ò»¸ö½ø³Ì£¬¿ÉÒÔ¶ÔÆä½øĞĞ Std I/O ²Ù×÷
-		 */
-		class Process {
-			HANDLE to_hRead = NULL, to_hWrite = NULL;
-			HANDLE from_hRead = NULL, from_hWrite = NULL;
-			PROCESS_INFORMATION process_info;
-		public:
-			/**
-			* @brief				ÊµÀı»¯½ø³Ì
-			* @param file_name		ÒªÖ´ĞĞµÄÎÄ¼ş (¿ÉÒÔÎª¿Õ)
-			* @param command_line	ÒªÖ´ĞĞµÄÃüÁîĞĞ
-			* @param show_window	ÊÇ·ñÏÔÊ¾´°¿Ú
-			* @exception std::exception ´Ëº¯Êı»áÅ×³öÒì³££¡
-			*/
-			Process(
-				const std::string& file_name,
-				const std::string& command_line,
-				const std::string& working_dir = "",
-				bool show_window = false) {
-				// ´´½¨¹ÜµÀ
-				SECURITY_ATTRIBUTES se = { 0 };
-				se.lpSecurityDescriptor = NULL;
-				se.bInheritHandle = TRUE;
-				se.nLength = sizeof(se);
-				if (CreatePipe(&to_hRead, &to_hWrite, &se, 0) == 0) {
-					throw std::exception("Failed to create pipe");
-				}
-				if (CreatePipe(&from_hRead, &from_hWrite, &se, 0) == 0) {
-					throw std::exception("Failed to create pipe");
-				}
-				// ´´½¨½ø³Ì
-				STARTUPINFOA sInfo = { 0 };
-				sInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-				sInfo.wShowWindow = show_window ? SW_SHOW : SW_HIDE;
-				sInfo.hStdInput = to_hRead;
-				sInfo.hStdOutput = from_hWrite;
-				sInfo.hStdError = from_hWrite;
-				if (CreateProcessA(
-					file_name.empty() ? NULL : file_name.c_str(),
-					command_line.empty() ? NULL : (char*)command_line.c_str(),
-					NULL, NULL, TRUE, NULL, NULL,
-					working_dir.empty() ? NULL : working_dir.c_str(),
-					&sInfo, &process_info) == 0) {
-					throw std::exception("Failed to create process");
-				}
-			}
-			~Process() {
-				if (getExitCode() == STILL_ACTIVE) {
-					kill();
-				}
-				if (to_hWrite) {
-					CloseHandle(to_hWrite);
-				}
-				if (from_hRead) {
-					CloseHandle(from_hRead);
-				}
-				CloseHandle(process_info.hProcess);
-			}
-			/**
-			* @brief	Ïò½ø³ÌµÄ stdin Ğ´ÈëÊı¾İ
-			* @return	Êµ¼ÊĞ´ÈëµÄ×Ö½ÚÊı
-			* @exception std::exception Ğ´ÈëÊ§°ÜÊ±Å×³öÒì³£
-			*/
-			DWORD write(const std::string& data) {
-				DWORD bytes_written;
-				if (WriteFile(to_hWrite, data.c_str(), data.size(), &bytes_written, NULL) == 0) {
-					throw std::exception("Failed to write to pipe");
-				}
-				return bytes_written;
-			}
-			/**
-			* @brief	·µ»Ø stdout ÖĞµÄ×Ö½ÚÊı(²»É¾³ı)
-			* @return	stdout ÖĞµÄ×Ö½ÚÊı
-			* @exception std::exception peek Ê§°ÜÊ±Å×³öÒì³£
-			*/
-			DWORD peek() {
-				DWORD bytes;
-				if (PeekNamedPipe(from_hRead, NULL, NULL, NULL, &bytes, NULL) == 0) {
-					throw std::exception("Failed to peek pipe");
-				}
-				return bytes;
-			}
-			/**
-			* @brief				´Ó½ø³ÌµÄ stdout ¶ÁÈ¡Êı¾İ
-			* @param bytes_to_read	Òª¶ÁÈ¡µÄ×î´ó×Ö½ÚÊı
-			* @return				Êµ¼Ê¶ÁÈ¡µÄ×Ö½ÚÊı
-			* @exception std::exception ¶ÁÈ¡Ê§°ÜÊ±Å×³öÒì³£
-			*/
-			std::string read(DWORD bytes_to_read = 512) {
-				DWORD bytes_read;
-				unsigned char* buf = new unsigned char[bytes_to_read];
-				if (ReadFile(from_hRead, buf, bytes_to_read, &bytes_read, NULL) == 0) {
-					delete[] buf;
-					throw std::exception("Failed to read from pipe");
-				}
-				std::string res;
-				res.resize(bytes_read);
-				for (DWORD i = 0; i < bytes_read; i++) {
-					res[i] = buf[i];
-				}
-				delete[] buf;
-				return res;
-			}
-			/**
-			* @brief				´Ó½ø³ÌµÄ stdout ¶ÁÈ¡Êı¾İÖ±µ½ĞĞÎ²
-			* @param max_bytes		Òª¶ÁÈ¡µÄ×î´ó×Ö½ÚÊı
-			* @return				Êµ¼Ê¶ÁÈ¡µÄ×Ö½ÚÊı
-			* @exception std::exception ¶ÁÈ¡Ê§°ÜÊ±Å×³öÒì³£
-			*/
-			std::string getline(DWORD max_bytes = 1024) {
-				DWORD bytes_read;
-				std::string res;
-				char buf;
-				for (DWORD i = 0; i < max_bytes; i++) {
-					if (ReadFile(from_hRead, &buf, 1, &bytes_read, NULL) == 0) {
-						throw std::exception("Failed to read from pipe");
-					}
-					if (buf == '\r' || buf == '\n') {
-						if (res.empty()) {
-							continue;
-						} else return res;
-					}
-					res += buf;
-				}
-				return res;
-			}
-			/**
-			* @brief				»ñÈ¡½ø³ÌµÄ·µ»ØÖµ
-			* @retval STILL_ACTIVE	½ø³ÌÎ´ÍË³ö
-			*/
-			DWORD getExitCode() {
-				DWORD code;
-				GetExitCodeProcess(process_info.hProcess, &code);
-				return code;
-			}
-			/**
-			* @brief	Ç¿ÖÆÖÕÖ¹½ø³Ì
-			*/
-			void kill(UINT exit_code = 0) {
-				TerminateProcess(process_info.hProcess, exit_code);
-			}
-		};
-	} // namespace process
-} // namespace  mlib
+    namespace process {
+        /**
+         * @brief   è¿›ç¨‹åŒ…è£…å™¨
+         */
+        class Process {
+            HANDLE to_hRead = NULL, to_hWrite = NULL;
+            HANDLE from_hRead = NULL, from_hWrite = NULL;
+            PROCESS_INFORMATION process_info;
+
+            DWORD buf_size = 1024 * 1024; // ç¼“å†²åŒºæœ€å¤§å¤§å°
+            std::string buf;
+            bool quit = false;
+            std::mutex mtx;
+            void readThread() {
+                char ch;
+                DWORD bytes_read;
+                while (not quit) {
+                    while (buf.size() >= buf_size);
+                    ReadFile(from_hRead, &ch, 1, &bytes_read, NULL);
+                    if (bytes_read) {
+                        mtx.lock();
+                        buf += ch;
+                        mtx.unlock();
+                    }
+                }
+                mtx.lock();
+                quit = false; // æŒ‡ç¤ºçº¿ç¨‹å·²é€€å‡º
+                mtx.unlock();
+            }
+        public:
+            /**
+            * @brief				å®ä¾‹åŒ–è¿›ç¨‹
+            * @param file_name		è¦æ‰§è¡Œçš„æ–‡ä»¶ (å¯ä»¥ä¸ºç©º)
+            * @param command_line	è¦æ‰§è¡Œçš„å‘½ä»¤è¡Œ
+            * @param show_window	æ˜¯å¦æ˜¾ç¤ºçª—å£
+            * @exception std::runtime_error
+            */
+            Process(const std::string& file_name,
+                const std::string& command_line,
+                const std::string& working_dir = "",
+                bool show_window = false) {
+                // åˆ›å»ºç®¡é“
+                SECURITY_ATTRIBUTES se = { 0 };
+                se.lpSecurityDescriptor = NULL;
+                se.bInheritHandle = TRUE;
+                se.nLength = sizeof(se);
+                if (CreatePipe(&to_hRead, &to_hWrite, &se, 0) == 0) {
+                    throw std::runtime_error("Failed to create pipe");
+                }
+                if (CreatePipe(&from_hRead, &from_hWrite, &se, 0) == 0) {
+                    throw std::runtime_error("Failed to create pipe");
+                }
+                // åˆ›å»ºè¿›ç¨‹
+                STARTUPINFOA sInfo = { 0 };
+                sInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+                sInfo.wShowWindow = show_window ? SW_SHOW : SW_HIDE;
+                sInfo.hStdInput = to_hRead;
+                sInfo.hStdOutput = from_hWrite;
+                sInfo.hStdError = from_hWrite;
+                if (CreateProcessA(
+                    NULL,
+                    (char*)(file_name + " " + command_line).c_str(),
+                    NULL, NULL, TRUE, NULL, NULL,
+                    working_dir.empty() ? NULL : working_dir.c_str(),
+                    &sInfo, &process_info) == 0) {
+                    throw std::runtime_error("Failed to create process");
+                }
+                // å¯åŠ¨è¯»å–çº¿ç¨‹
+                std::thread(&Process::readThread, this).detach();
+            }
+            ~Process() {
+                mtx.lock();
+                quit = true;
+                mtx.unlock();
+                while (quit);
+            }
+            /**
+             * @brief   è®¾ç½®è¯»å–ç¼“å†²åŒºå¤§å°
+             */
+            void resizeBuf(size_t size) {
+                buf_size = size;
+            }
+            /**
+             * @brief   æ¸…ç©ºç¼“å†²åŒº
+             */
+            void clearBuf() {
+                mtx.lock();
+                buf.clear();
+                mtx.unlock();
+            }
+            /**
+             * @brief   ä» stdout è¯»å–(ä¸åˆ é™¤)
+             * @param bytes_to_read	è¦è¯»å–çš„æœ€å¤§å­—èŠ‚æ•°
+             */
+            std::string peek(size_t bytes_to_read = -1) {
+                size_t size = std::min(bytes_to_read, buf.size());
+                std::string res = buf.substr(0, size);
+                return res;
+            }
+            /**
+             * @brief   ä» stdout è¯»å–(å¹¶åˆ é™¤)
+             * @param bytes_to_read	è¦è¯»å–çš„æœ€å¤§å­—èŠ‚æ•°
+             */
+            std::string read(size_t bytes_to_read = -1) {
+                size_t size = std::min(bytes_to_read, buf.size());
+                std::string res = buf.substr(0, size);
+                mtx.lock();
+                buf.erase(0, size);
+                mtx.unlock();
+                return res;
+            }
+            /**
+            * @brief	å‘è¿›ç¨‹çš„ stdin å†™å…¥æ•°æ®
+            * @return	å®é™…å†™å…¥çš„å­—èŠ‚æ•°
+            * @exception std::exception å†™å…¥å¤±è´¥æ—¶æŠ›å‡ºå¼‚å¸¸
+            */
+            DWORD write(const std::string& data) {
+                DWORD bytes_written;
+                if (WriteFile(to_hWrite, data.c_str(), data.size(), &bytes_written, NULL) == 0) {
+                    throw std::runtime_error("Failed to write to pipe");
+                }
+                return bytes_written;
+            }
+            /**
+            * @brief				ä»è¿›ç¨‹çš„ stdout è¯»å–æ•°æ®ç›´åˆ°è¡Œå°¾
+            * @param max_bytes		è¦è¯»å–çš„æœ€å¤§å­—èŠ‚æ•°
+            * @return				å®é™…è¯»å–çš„å­—èŠ‚æ•°
+            */
+            std::string getLine(DWORD max_bytes = 1024) {
+                DWORD bytes_read;
+                std::string res;
+                char buf;
+                for (DWORD i = 0; i < max_bytes; i++) {
+                    buf = read(1)[0];
+                    if (buf == '\r' || buf == '\n') {
+                        if (res.empty()) {
+                            continue;
+                        } else return res;
+                    }
+                    res += buf;
+                }
+                return res;
+            }
+            /**
+            * @brief				è·å–è¿›ç¨‹çš„è¿”å›å€¼
+            * @retval STILL_ACTIVE	è¿›ç¨‹æœªé€€å‡º
+            */
+            DWORD getExitCode() {
+                DWORD code;
+                GetExitCodeProcess(process_info.hProcess, &code);
+                return code;
+            }
+            /**
+            * @brief	å¼ºåˆ¶ç»ˆæ­¢è¿›ç¨‹
+            */
+            void kill(UINT exit_code = 0) {
+                TerminateProcess(process_info.hProcess, exit_code);
+            }
+        };
+    } // namespace process
+} // namespace mlib
