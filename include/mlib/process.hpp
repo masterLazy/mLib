@@ -25,14 +25,14 @@ namespace mlib {
             HANDLE from_hRead = NULL, from_hWrite = NULL;
             PROCESS_INFORMATION process_info;
 
-            DWORD buf_size = 1024 * 1024; // 缓冲区最大大小
+            DWORD buf_size = 16 * 1024 * 1024; // 缓冲区最大大小
+            std::thread read_thread;
             std::string buf;
-            bool quit = false;
             std::mutex mtx;
             void readThread() {
                 char ch;
                 DWORD bytes_read;
-                while (not quit) {
+                while (true) {
                     while (buf.size() >= buf_size);
                     ReadFile(from_hRead, &ch, 1, &bytes_read, NULL);
                     if (bytes_read) {
@@ -41,9 +41,6 @@ namespace mlib {
                         mtx.unlock();
                     }
                 }
-                mtx.lock();
-                quit = false; // 指示线程已退出
-                mtx.unlock();
             }
         public:
             /**
@@ -84,13 +81,11 @@ namespace mlib {
                     throw std::runtime_error("Failed to create process");
                 }
                 // 启动读取线程
-                std::thread(&Process::readThread, this).detach();
+                std::thread read_thread(&Process::readThread, this);
+                read_thread.detach();
             }
             ~Process() {
-                mtx.lock();
-                quit = true;
-                mtx.unlock();
-                while (quit);
+                TerminateThread(read_thread.native_handle(), 0);
             }
             /**
              * @brief   设置读取缓冲区大小
@@ -153,7 +148,8 @@ namespace mlib {
                     if (buf == '\r' || buf == '\n') {
                         if (res.empty()) {
                             continue;
-                        } else return res;
+                        }
+                        else return res;
                     }
                     res += buf;
                 }
