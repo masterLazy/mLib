@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "console.hpp"
 
@@ -27,33 +28,45 @@ namespace mlib {
 		class Logger {
 			LogLevel log_level;
 			std::ostream& os;
+			std::vector<std::string> filenames;
 			bool color;
 
 			void log(LogLevel log_level, const std::string& msg) const {
 				if (log_level < this->log_level) return;
 				switch (log_level) {
 				case logger::debug:
-					os << "[DEBUG";
+					dispatch("[DEBUG] ");
 					break;
 				case logger::info:
 					if (color) os << console::fCyan;
-					os << "[INFO";
+					dispatch("[INFO] ");
 					break;
 				case logger::warn:
 					if (color) os << console::fYellow;
-					os << "[WARN";
+					dispatch("[WARN] ");
 					break;
 				case logger::error:
 					if (color) os << console::fRed;
-					os << "[ERROR";
+					dispatch("[ERROR]");
 					break;
 				case logger::fatal:
 					if (color) os << console::fRed << console::fUdl;
-					os << "[FATAL";
+					dispatch("[FATAL]");
 					break;
 				}
-				os << "] " << msg << std::endl;
+				dispatch(" ").dispatch(msg).dispatch("\n");
 				if (color) os << console::fReset;
+			}
+			const Logger& dispatch(std::string msg) const {
+				os << msg;
+				std::ofstream of;
+				for (auto filename : filenames) {
+					of.open(filename);
+					if (not of.is_open())continue; // 忽略这个输出目标
+					of << msg;
+					of.close();
+				}
+				return *this;
 			}
 		public:
 			/**
@@ -61,8 +74,16 @@ namespace mlib {
 			* @param os			要使用的输出流
 			* @param color		是否使用彩色输出
 			*/
-			Logger(LogLevel log_level = logger::info, std::ostream& os = std::clog, bool color = true) :
+			Logger(LogLevel log_level = logger::info, std::ostream& os = std::clog, bool color = false) :
 				log_level(log_level), color(color), os(os) {
+			}
+
+			/**
+			 * @brief 			添加文件输出
+			 * @param filename	要写入的文件名
+			 */
+			bool addFileSink(std::string filename) {
+				filenames.push_back(filename);
 			}
 
 			/** @brief 调试信息 */
