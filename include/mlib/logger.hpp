@@ -11,7 +11,7 @@
 #include <fstream>
 #include <vector>
 
-#include "console.hpp"
+#include "function.hpp"
 
 namespace mlib {
 	namespace logger {
@@ -27,37 +27,34 @@ namespace mlib {
 		*/
 		class Logger {
 			LogLevel log_level;
+			bool date_time;
 			std::ostream& os;
 			std::vector<std::string> filenames;
-			bool color;
-
 			void log(LogLevel log_level, const std::string& msg) const {
 				if (log_level < this->log_level) return;
+				if (date_time) {
+					dispatch(function::GetFormattedDateTime(false));dispatch(" ");
+				}
 				switch (log_level) {
 				case logger::debug:
 					dispatch("[DEBUG] ");
 					break;
 				case logger::info:
-					if (color) os << console::fCyan;
 					dispatch("[INFO] ");
 					break;
 				case logger::warn:
-					if (color) os << console::fYellow;
 					dispatch("[WARN] ");
 					break;
 				case logger::error:
-					if (color) os << console::fRed;
 					dispatch("[ERROR]");
 					break;
 				case logger::fatal:
-					if (color) os << console::fRed << console::fUdl;
 					dispatch("[FATAL]");
 					break;
 				}
-				dispatch(" ").dispatch(msg).dispatch("\n");
-				if (color) os << console::fReset;
+				dispatch(" ");dispatch(msg);dispatch("\n");
 			}
-			const Logger& dispatch(std::string msg) const {
+			void dispatch(std::string msg) const {
 				os << msg;
 				std::ofstream of;
 				for (auto filename : filenames) {
@@ -66,23 +63,22 @@ namespace mlib {
 					of << msg;
 					of.close();
 				}
-				return *this;
 			}
 		public:
 			/**
 			* @param log_level	输出日志级别
+			* @param date_time	是否输出时间
 			* @param os			要使用的输出流
-			* @param color		是否使用彩色输出
 			*/
-			Logger(LogLevel log_level = logger::info, std::ostream& os = std::clog, bool color = false) :
-				log_level(log_level), color(color), os(os) {
+			Logger(LogLevel log_level = logger::info, bool date_time = true, std::ostream& os = std::clog) :
+				log_level(log_level), date_time(date_time), os(os) {
 			}
 
 			/**
 			 * @brief 			添加文件输出
 			 * @param filename	要写入的文件名
 			 */
-			bool addFileSink(std::string filename) {
+			void addFileSink(std::string filename) {
 				filenames.push_back(filename);
 			}
 
