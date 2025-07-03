@@ -21,7 +21,7 @@ namespace mlib {
 		 * @param precision		保留几位小数
 		 * @param i_style		是否使用如"KiB"的样式
 		 */
-		std::string ByteToString(float bytes, int precision = 2, bool i_style = true) {
+		inline std::string ByteToString(float bytes, int precision = 2, bool i_style = true) {
 			std::ostringstream oss;
 			oss.setf(std::ios::fixed, std::ios::floatfield);
 			if (bytes <= 999) {
@@ -51,7 +51,7 @@ namespace mlib {
 		 * @brief			获取文件大小
 		 * @param file		要获取大小的文件指针
 		 */
-		size_t GetFileSize(FILE* file) {
+		inline size_t GetFileSize(FILE* file) {
 			size_t off = _ftelli64(file);
 			_fseeki64(file, -1, 0);
 			size_t size = _ftelli64(file);
@@ -64,7 +64,7 @@ namespace mlib {
 		 * @param date		是否包含日期
 		 * @param time		是否包含时间
 		 */
-		std::string GetFormattedDateTime(bool date = true, bool time = true) {
+		inline std::string GetFormattedDateTime(bool date = true, bool time = true) {
 			auto now = std::chrono::system_clock::now();
 			auto in_time_t = std::chrono::system_clock::to_time_t(now);
 			std::tm tm = *std::localtime(&in_time_t);

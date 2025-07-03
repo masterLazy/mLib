@@ -26,6 +26,7 @@ mLib 是一个仅标头库，将 `include/` 添加到你的包含目录下，然
 
 | 组件     | 子命名空间       | 内容                                                         |
 | -------- | ---------------- | ------------------------------------------------------------ |
+| function | `mlib::function` | 实用函数。
 | fastmath | `mlib::fastmath` | 基于多种后端的并行加速数学库，计划开发 C++ AMP、OpenCL 两种后端。C++ AMP 后端的开发已停滞，OpenCL 后端的开发尚未开始。 |
 | console  | `mlib::console`  | 用于控制台的实用工具。                                       |
 | result   | `mlib::result`   |                                                              |
