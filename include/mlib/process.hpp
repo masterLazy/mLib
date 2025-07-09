@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file		Process.hpp
- * @brief		ï¿½ï¿½×°Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ì£ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Std I/O ï¿½ï¿½ï¿½ï¿½
+ * @brief		°ü×°Ò»¸ö½ø³Ì£¬¿ÉÒÔ¶ÔÆä½øÐÐ Std I/O ²Ù×÷
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -15,7 +15,7 @@
 
 namespace mlib {
 	/**
-	 * @brief	ï¿½ï¿½×°Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ì£ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Std I/O ï¿½ï¿½ï¿½ï¿½
+	 * @brief	°ü×°Ò»¸ö½ø³Ì£¬¿ÉÒÔ¶ÔÆä½øÐÐ Std I/O ²Ù×÷
 	 */
 	class Process {
 		HANDLE to_hRead = NULL, to_hWrite = NULL;
@@ -23,18 +23,18 @@ namespace mlib {
 		PROCESS_INFORMATION process_info;
 	public:
 		/**
-		* @brief				Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		* @param file_name		ÒªÖ´ï¿½Ðµï¿½ï¿½Ä¼ï¿½ (ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½)
-		* @param command_line	ÒªÖ´ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		* @param show_window	ï¿½Ç·ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
-		* @exception std::exception ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×³ï¿½ï¿½ì³£ï¿½ï¿½
+		* @brief				ÊµÀý»¯½ø³Ì
+		* @param file_name		ÒªÖ´ÐÐµÄÎÄ¼þ (¿ÉÒÔÎª¿Õ)
+		* @param command_line	ÒªÖ´ÐÐµÄÃüÁîÐÐ
+		* @param show_window	ÊÇ·ñÏÔÊ¾´°¿Ú
+		* @exception std::exception ´Ëº¯Êý»áÅ×³öÒì³££¡
 		*/
 		Process(
 			const std::string& file_name,
 			const std::string& command_line,
 			const std::string& working_dir = "",
 			bool show_window = false) {
-			// ï¿½ï¿½ï¿½ï¿½ï¿½Üµï¿½
+			// ´´½¨¹ÜµÀ
 			SECURITY_ATTRIBUTES se = { 0 };
 			se.lpSecurityDescriptor = NULL;
 			se.bInheritHandle = TRUE;
@@ -45,7 +45,7 @@ namespace mlib {
 			if (CreatePipe(&from_hRead, &from_hWrite, &se, 0) == 0) {
 				throw std::exception("Failed to create pipe");
 			}
-			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ´´½¨½ø³Ì
 			STARTUPINFOA sInfo = { 0 };
 			sInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 			sInfo.wShowWindow = show_window ? SW_SHOW : SW_HIDE;
@@ -74,9 +74,9 @@ namespace mlib {
 			CloseHandle(process_info.hProcess);
 		}
 		/**
-		* @brief	ï¿½ï¿½ï¿½ï¿½Ìµï¿½ stdin Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		* @return	Êµï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @exception std::exception Ð´ï¿½ï¿½Ê§ï¿½ï¿½Ê±ï¿½×³ï¿½ï¿½ì³£
+		* @brief	Ïò½ø³ÌµÄ stdin Ð´ÈëÊý¾Ý
+		* @return	Êµ¼ÊÐ´ÈëµÄ×Ö½ÚÊý
+		* @exception std::exception Ð´ÈëÊ§°ÜÊ±Å×³öÒì³£
 		*/
 		DWORD write(const std::string& data) {
 			DWORD bytes_written;
@@ -86,9 +86,9 @@ namespace mlib {
 			return bytes_written;
 		}
 		/**
-		* @brief	ï¿½ï¿½ï¿½ï¿½ stdout ï¿½Ðµï¿½ï¿½Ö½ï¿½ï¿½ï¿½(ï¿½ï¿½É¾ï¿½ï¿½)
-		* @return	stdout ï¿½Ðµï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @exception std::exception peek Ê§ï¿½ï¿½Ê±ï¿½×³ï¿½ï¿½ì³£
+		* @brief	·µ»Ø stdout ÖÐµÄ×Ö½ÚÊý(²»É¾³ý)
+		* @return	stdout ÖÐµÄ×Ö½ÚÊý
+		* @exception std::exception peek Ê§°ÜÊ±Å×³öÒì³£
 		*/
 		DWORD peek() {
 			DWORD bytes;
@@ -98,10 +98,10 @@ namespace mlib {
 			return bytes;
 		}
 		/**
-		* @brief				ï¿½Ó½ï¿½ï¿½Ìµï¿½ stdout ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
-		* @param bytes_to_read	Òªï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @return				Êµï¿½Ê¶ï¿½È¡ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @exception std::exception ï¿½ï¿½È¡Ê§ï¿½ï¿½Ê±ï¿½×³ï¿½ï¿½ì³£
+		* @brief				´Ó½ø³ÌµÄ stdout ¶ÁÈ¡Êý¾Ý
+		* @param bytes_to_read	Òª¶ÁÈ¡µÄ×î´ó×Ö½ÚÊý
+		* @return				Êµ¼Ê¶ÁÈ¡µÄ×Ö½ÚÊý
+		* @exception std::exception ¶ÁÈ¡Ê§°ÜÊ±Å×³öÒì³£
 		*/
 		std::string read(DWORD bytes_to_read = 512) {
 			DWORD bytes_read;
@@ -119,10 +119,10 @@ namespace mlib {
 			return res;
 		}
 		/**
-		* @brief				ï¿½Ó½ï¿½ï¿½Ìµï¿½ stdout ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½Î²
-		* @param max_bytes		Òªï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @return				Êµï¿½Ê¶ï¿½È¡ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
-		* @exception std::exception ï¿½ï¿½È¡Ê§ï¿½ï¿½Ê±ï¿½×³ï¿½ï¿½ì³£
+		* @brief				´Ó½ø³ÌµÄ stdout ¶ÁÈ¡Êý¾ÝÖ±µ½ÐÐÎ²
+		* @param max_bytes		Òª¶ÁÈ¡µÄ×î´ó×Ö½ÚÊý
+		* @return				Êµ¼Ê¶ÁÈ¡µÄ×Ö½ÚÊý
+		* @exception std::exception ¶ÁÈ¡Ê§°ÜÊ±Å×³öÒì³£
 		*/
 		std::string getline(DWORD max_bytes = 1024) {
 			DWORD bytes_read;
@@ -142,8 +142,8 @@ namespace mlib {
 			return res;
 		}
 		/**
-		* @brief				ï¿½ï¿½È¡ï¿½ï¿½ï¿½ÌµÄ·ï¿½ï¿½ï¿½Öµ
-		* @retval STILL_ACTIVE	ï¿½ï¿½ï¿½ï¿½Î´ï¿½Ë³ï¿½
+		* @brief				»ñÈ¡½ø³ÌµÄ·µ»ØÖµ
+		* @retval STILL_ACTIVE	½ø³ÌÎ´ÍË³ö
 		*/
 		DWORD getExitCode() {
 			DWORD code;
@@ -151,7 +151,7 @@ namespace mlib {
 			return code;
 		}
 		/**
-		* @brief	Ç¿ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
+		* @brief	Ç¿ÖÆÖÕÖ¹½ø³Ì
 		*/
 		void kill(UINT exit_code = 0) {
 			TerminateProcess(process_info.hProcess, exit_code);

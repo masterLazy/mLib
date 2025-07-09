@@ -1,9 +1,9 @@
 #pragma once
 /**
  * @file		CSI.hpp
- * @brief		é€šè¿‡æ§åˆ¶å°è™šæ‹Ÿç»ˆç«¯åºåˆ— (CSI) å®ç°çš„åŠŸèƒ½
+ * @brief		Í¨¹ı¿ØÖÆÌ¨ĞéÄâÖÕ¶ËĞòÁĞ (CSI) ÊµÏÖµÄ¹¦ÄÜ
  * @details		https://learn.microsoft.com/zh-cn/windows/console/console-virtual-terminal-sequences
- * @note		ä»¥ Printer å½¢å¼æä¾›çš„æˆå‘˜å¯ä»¥ä»¥å‡½æ•°å½¢å¼è°ƒç”¨, ä¾‹å¦‚ï¼šclear_line()
+ * @note		ÒÔ Printer ĞÎÊ½Ìá¹©µÄ³ÉÔ±¿ÉÒÔÒÔº¯ÊıĞÎÊ½µ÷ÓÃ, ÀıÈç£ºclear_line()
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -13,22 +13,22 @@
 
 namespace mlib {
 	namespace Console {
-		/** @brief æ¸…ç©ºè¡Œ, å›åˆ°è¡Œé¦– */			const Printer clearLine("\033[2K\r");
-		/** @brief æ¸…ç©ºå±å¹•, å›åˆ°å±å¹•åŸç‚¹ */	const Printer clearScreen("\033[1J\033[0;0H");
+		/** @brief Çå¿ÕĞĞ, »Øµ½ĞĞÊ× */			const Printer clearLine("\033[2K\r");
+		/** @brief Çå¿ÕÆÁÄ», »Øµ½ÆÁÄ»Ô­µã */	const Printer clearScreen("\033[1J\033[0;0H");
 
-		/** @brief å­—ä½“é‡ç½® */		const Printer fReset("\033[0m");
-		/** @brief å­—ä½“è®¾ä¸ºç²—ä½“ */	const Printer fBold("\033[1m");
-		/** @brief å­—ä½“å–æ¶ˆç²—ä½“ */	const Printer fNoBold("\033[22m");
-		/** @brief å­—ä½“ä¸‹åˆ’çº¿ */		const Printer fUdl("\033[4m");
-		/** @brief å­—ä½“å–æ¶ˆä¸‹åˆ’çº¿ */	const Printer fNoUdl("\033[24m");
+		/** @brief ×ÖÌåÖØÖÃ */		const Printer fReset("\033[0m");
+		/** @brief ×ÖÌåÉèÎª´ÖÌå */	const Printer fBold("\033[1m");
+		/** @brief ×ÖÌåÈ¡Ïû´ÖÌå */	const Printer fNoBold("\033[22m");
+		/** @brief ×ÖÌåÏÂ»®Ïß */		const Printer fUdl("\033[4m");
+		/** @brief ×ÖÌåÈ¡ÏûÏÂ»®Ïß */	const Printer fNoUdl("\033[24m");
 
-		/** @brief å­—ä½“é»‘è‰² */	const Printer fBlack("\033[30m");
-		/** @brief å­—ä½“çº¢è‰² */	const Printer fRed("\033[31m");
-		/** @brief å­—ä½“ç»¿è‰² */	const Printer fGreen("\033[32m");
-		/** @brief å­—ä½“é»„è‰² */	const Printer fYellow("\033[33m");
-		/** @brief å­—ä½“è“è‰² */	const Printer fBlue("\033[34m");
-		/** @brief å­—ä½“å“çº¢è‰² */	const Printer fMagenta("\033[35m");
-		/** @brief å­—ä½“é’è‰² */	const Printer fCyan("\033[36m");
-		/** @brief å­—ä½“ç™½è‰² */	const Printer fWhite("\033[37m");
+		/** @brief ×ÖÌåºÚÉ« */	const Printer fBlack("\033[30m");
+		/** @brief ×ÖÌåºìÉ« */	const Printer fRed("\033[31m");
+		/** @brief ×ÖÌåÂÌÉ« */	const Printer fGreen("\033[32m");
+		/** @brief ×ÖÌå»ÆÉ« */	const Printer fYellow("\033[33m");
+		/** @brief ×ÖÌåÀ¶É« */	const Printer fBlue("\033[34m");
+		/** @brief ×ÖÌåÆ·ºìÉ« */	const Printer fMagenta("\033[35m");
+		/** @brief ×ÖÌåÇàÉ« */	const Printer fCyan("\033[36m");
+		/** @brief ×ÖÌå°×É« */	const Printer fWhite("\033[37m");
 	} // namespace console
 } // namespace mlib

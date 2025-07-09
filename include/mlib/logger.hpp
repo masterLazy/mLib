@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file		Logger.hpp
- * @brief		æ—¥å¿—å™¨
+ * @brief		ÈÕÖ¾Æ÷
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -9,13 +9,12 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector>
 
-#include "function.hpp"
+#include "console.hpp"
 
 namespace mlib {
 	/**
-	* @brief	æ—¥å¿—å™¨
+	* @brief	ÈÕÖ¾Æ÷
 	*/
 	class Logger {
 	public:
@@ -59,31 +58,31 @@ namespace mlib {
 		}
 	public:
 		/**
-		* @param log_level	è¾“å‡ºæ—¥å¿—çº§åˆ«
-		* @param os			è¦ä½¿ç”¨çš„è¾“å‡ºæµ
-		* @param color		æ˜¯å¦ä½¿ç”¨å½©è‰²è¾“å‡º
+		* @param log_level	Êä³öÈÕÖ¾¼¶±ğ
+		* @param os			ÒªÊ¹ÓÃµÄÊä³öÁ÷
+		* @param color		ÊÇ·ñÊ¹ÓÃ²ÊÉ«Êä³ö
 		*/
 		Logger(LogLevel log_level = info, std::ostream& os = std::clog, bool color = true) :
 			log_level(log_level), color(color), os(os) {
 		}
 
-		/** @brief è°ƒè¯•ä¿¡æ¯ */
+		/** @brief µ÷ÊÔĞÅÏ¢ */
 		void debug(const std::string& msg) const {
 			log(debug, msg);
 		}
-		/** @brief ä¸€èˆ¬ä¿¡æ¯ */
+		/** @brief Ò»°ãĞÅÏ¢ */
 		void info(const std::string& msg) const {
 			log(info, msg);
 		}
-		/** @brief è­¦å‘Š */
+		/** @brief ¾¯¸æ */
 		void warn(const std::string& msg) const {
 			log(warn, msg);
 		}
-		/** @brief é”™è¯¯ */
+		/** @brief ´íÎó */
 		void error(const std::string& msg) const {
 			log(error, msg);
 		}
-		/** @brief è‡´å‘½é”™è¯¯ */
+		/** @brief ÖÂÃü´íÎó */
 		void fatal(const std::string& msg) const {
 			log(fatal, msg);
 		}

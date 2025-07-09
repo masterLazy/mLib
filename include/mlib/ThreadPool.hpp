@@ -10,7 +10,6 @@
 #include <thread>
 #include <atomic>
 #include <vector>
-#include <queue>
 #include <functional>
 #include <condition_variable>
 #include <Windows.h>
@@ -33,7 +32,15 @@ namespace mlib {
 		template<typename TaskType> class ThreadPool {
 		public:
 			typedef std::function<void(TaskType, const Signal&)> workFunc_t;
+			typedef unsigned long long taskId_t;
 
+		private:
+			struct TaskEx {
+				TaskType task;
+				taskId_t id;
+			};
+
+		public:
 			/**
 			* @brief			初始化线程池
 			* @param count		线程数量
@@ -57,11 +64,15 @@ namespace mlib {
 				}
 			}
 
-			/** @brief 添加任务到队列 */
-			void pushTask(const TaskType& new_task) {
+			/** 
+			 * @brief	添加任务到队列 
+			 * @return	独一无二的任务编号
+			 */
+			taskId_t pushTask(const TaskType& new_task) {
 				std::unique_lock<std::mutex> lk(mtx);
-				tasks.push(new_task);
+				tasks.push({ new_task, task_id});
 				cv.notify_one(); // 只让一个来抢
+				return task_id++;
 			}
 
 			/** @brief	通知所有线程开始工作 */
@@ -103,18 +114,35 @@ namespace mlib {
 				return tasks.size();
 			}
 
+			/** 
+			 * @brief		移除指定任务 
+			 * @param id	要移除的任务编号
+			 * @return		任务不存在时返回 false
+			 */
+			bool removeTask(taskId_t id) {
+				std::unique_lock<std::mutex> lk(mtx);
+				for (size_t i = 0; i < tasks.size(); i++) {
+					if (i.id == id) {
+						tasks.erase(i);
+						return true;
+					}
+				}
+				return false;
+			}
+
 			/** @brief	清空所有任务 */
 			void clearTasks() {
 				std::unique_lock<std::mutex> lk(mtx);
-				tasks = std::queue<TaskType>();
+				tasks.clear();
 			}
 
-		//private:
+		private:
 			size_t count;
 			workFunc_t work_func;
+			taskId_t task_id = 0;
 			std::atomic<size_t> count_active;
 			std::vector<std::thread*> threads;
-			std::queue<TaskType> tasks;
+			std::vector<TaskEx> tasks;
 			Signal signal = pause;
 			bool terminated = false;
 
@@ -124,7 +152,7 @@ namespace mlib {
 			/** @brief	线程入口点 */
 			void threadHandler() {
 				count_active++;
-				TaskType task;
+				TaskEx task_ex;
 				while (true) {
 					{
 						std::unique_lock<std::mutex> lk(mtx);
@@ -137,10 +165,10 @@ namespace mlib {
 						if (signal == pause or tasks.empty()) { // 不干了
 							mtx.unlock();
 						} else {
-							task = tasks.front();
-							tasks.pop();
+							task_ex = tasks.front();
+							tasks.erase(0);
 							mtx.unlock();
-							work_func(task, signal);
+							work_func(task_ex.task, signal);
 						}
 					} else if (signal == exit) {
 						break;
