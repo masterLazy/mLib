@@ -1,6 +1,6 @@
 #pragma once
 /**
- * @file		progressbar.hpp
+ * @file		ProgressBar.hpp
  * @brief		进度条
  * @details		类tdqm样式
  *
@@ -8,11 +8,11 @@
  * @copyright	Copyright (c) 2025 masterLazy
  */
 
-#include "mlib/console.hpp"
-#include "mlib/function.hpp"
+#include "../Console.hpp"
+#include "../Function.hpp"
 
 namespace mlib {
-	namespace console {
+	namespace Console {
 		const std::string __block_strs[9] = {
 			"",			// 空
 			"\u258f",	// 左 1/8
@@ -44,7 +44,7 @@ namespace mlib {
 				current = initial_position;
 				total = total_of_work;
 				if (width == -1) {
-					this->width = console::get_width();
+					this->width = Console::getWidth();
 				} else {
 					this->width = width;
 				}
@@ -62,7 +62,7 @@ namespace mlib {
 				current = initial_position;
 				total = total_of_work;
 				if (width == -1) {
-					this->width = console::get_width();
+					this->width = Console::getWidth();
 				} else {
 					this->width = width;
 				}
@@ -92,64 +92,64 @@ namespace mlib {
 			 * @brief					设置进度
 			 * @param current_work		当前工作量
 			 */
-			void set_current(size_t current_work) {
+			void setCurrent(size_t current_work) {
 				current = current_work % total;
 			}
 			/**
 			 * @brief					设置总工作量
 			 * @param total_of_work		总工作量
 			 */
-			void set_total(size_t total_of_work) {
+			void setTotal(size_t total_of_work) {
 				total = total_of_work;
 			}
 			/**
 			 * @brief			设置宽度
 			 * @param width		宽度
 			 */
-			void set_width(size_t width) {
+			void setWidth(size_t width) {
 				this->width = width;
 			}
 			/** @brief		获取当前完成的工作量  */
-			size_t get_current() const {
+			size_t getCurrent() const {
 				return current;
 			}
 			/**  @brief		获取总工作量 */
-			size_t get_total() const {
+			size_t getTotal() const {
 				return total;
 			}
 			/**
 			 * @brief		获取已用时间
 			 * @return		已用时间(s)
 			 */
-			int get_time_spent() const {
+			int getTimeSpent() const {
 				return float(clock() - begin_time) / CLOCKS_PER_SEC;
 			}
 			/**  @brief		获取估计剩余时间(s) */
-			int get_eta() const {
+			int getEta() const {
 				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
 				return sec / current * (total - current);
 			}
 			/** @brief		获取每秒完成的工作量 */
-			float get_itps() const {
-				return current / get_time_spent();
+			float getItps() const {
+				return current / getTimeSpent();
 			}
 			/**
 			 * @brief		告知工作量的单位是字节
 			 * @details		工作量将以字节数格式显示
 			 */
-			void work_of_bytes(bool is_work_of_bytes) {
+			void workOfBytes(bool is_work_of_bytes) {
 				is_bytes = is_work_of_bytes;
 			}
 			/**
 			 * @brief		用cout打印进度条
 			 * @return		进度条自身
 			 */
-			ProgressBar& print(bool clear_line = true) {
-				if (clear_line) {
-					// console::clear_line();
+			ProgressBar& print(bool clearLine = true) {
+				if (clearLine) {
+					// console::clearLine();
 					std::cout << "\r";
 				}
-				std::cout << to_string();
+				std::cout << toString();
 				return *this;
 			}
 
@@ -159,7 +159,7 @@ namespace mlib {
 			 * @brief		获取进度条字符串
 			 * @example		100%|█████████| 128/128 [00:02<00:00, 58.55it/s]
 			 */
-			std::string to_string() {
+			std::string toString() {
 				std::string str;
 				// xxx%|
 				char pre[8] = { 0 };
@@ -172,15 +172,15 @@ namespace mlib {
 				if (is_bytes) {
 					if (current == 0 or sec == 0 or eta < 0) {
 						sprintf_s(suf, "| %s/%s [%02ld:%02ld<?, ?B/s]",
-							funciton::byte_to_string(current).c_str(),
-							funciton::byte_to_string(total).c_str(),
+							Funciton::ByteToString(current).c_str(),
+							Funciton::ByteToString(total).c_str(),
 							int(sec) / 60, int(sec) % 60);
 					} else { // _B/s
 						sprintf_s(suf, "| %s/%s [%02d:%02ld<%02d:%02ld, %s/s]",
-							funciton::byte_to_string(current).c_str(),
-							funciton::byte_to_string(total).c_str(),
+							Funciton::ByteToString(current).c_str(),
+							Funciton::ByteToString(total).c_str(),
 							int(sec) / 60, int(sec) % 60, eta / 60, eta % 60,
-							funciton::byte_to_string(current / sec).c_str());
+							Funciton::ByteToString(current / sec).c_str());
 					}
 				} else {
 					if (current == 0 or sec == 0 or eta < 0) {
@@ -196,7 +196,7 @@ namespace mlib {
 				}
 				// ███████
 				int width = this->width - title.size() - strnlen_s(pre, 8) - strnlen_s(suf, 128);
-				width = max(width, 0);
+				width = std::max(width, 0);
 				float blocks = float(current) / total * width;
 				for (int i = 0; i < int(blocks); i++) {
 					str += __block_strs[8];

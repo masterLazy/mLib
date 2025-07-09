@@ -1,7 +1,7 @@
 #pragma once
 /**
- * @file		fuction.hpp
- * @brief		杂项函数
+ * @file		Fuction.hpp
+ * @brief		实用函数
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -13,14 +13,14 @@
 #include <sys/stat.h>	// stat
 
 namespace mlib {
-	namespace function {
+	namespace Function {
 		/**
 		 * @brief				字符数转字符串
 		 * @param bytes			字节数
 		 * @param precision		保留几位小数
 		 * @param i_style		是否使用如"KiB"的样式
 		 */
-		inline std::string byte_to_string(float bytes, int precision = 2, bool i_style = true) {
+		std::string ByteToString(float bytes, int precision = 2, bool i_style = true) {
 			std::ostringstream oss;
 			oss.setf(std::ios::fixed, std::ios::floatfield);
 			if (bytes <= 999) {
@@ -50,7 +50,7 @@ namespace mlib {
 		 * @brief			获取文件大小
 		 * @param file		要获取大小的文件指针
 		 */
-		inline size_t get_file_size(FILE* file) {
+		size_t GetFileSize(FILE* file) {
 			size_t off = _ftelli64(file);
 			_fseeki64(file, -1, 0);
 			size_t size = _ftelli64(file);

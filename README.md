@@ -8,7 +8,7 @@
 
 ## 使用方法
 
-mLib 是一个仅标头库，将 `include/` 添加到你的包含目录下，然后就可以使用 `mlib/` 下的头文件了。
+mLib 是一个仅标头（head-only）库，将 `include/` 添加到你的包含目录下，然后就可以使用 `mlib/` 下的头文件了。
 
 直接 `#include` 你需要的子组件就行。
 
@@ -20,17 +20,26 @@ mLib 是一个仅标头库，将 `include/` 添加到你的包含目录下，然
 
 作为主要分支开发中。
 
-各组件的总头文件放在根目录下，主体放在不同子目录内。
+各组件的总头文件放在根目录下，主体放在不同子目录内。所有组件都在 `mlib` 命名空间下，文件名总是和类名（子命名空间名）相同。每个组件中的所有内容都会包含在一个类（子命名空间）中。
 
-统一使用命名空间  `mlib`，有的组件下设各子命名空间。目前计划开发下列组件：
+| 文件           | 类名                           | 内容                                    |
+| -------------- | ------------------------------ | --------------------------------------- |
+| Console.hpp    | `mlib::Console`（命名空间）    | 用于控制台的实用工具                    |
+| Function.hpp   | `mlib::Function`（命名空间）   | 实用函数                                |
+| Logger.hpp     | `mlib::Logger`                 | 日志器                                  |
+| Process.hpp    | `mlib::Process`                | 包装一个进程，可以对其进行 Std I/O 操作 |
+| Result.hpp     | `mlib::Result`                 | 操作结果状态包装器                      |
+| ThreadPool.hpp | `mlib::ThreadPool`（命名空间） | 高性能线程池                            |
 
-| 组件     | 子命名空间       | 内容                                                         |
-| -------- | ---------------- | ------------------------------------------------------------ |
-| fastmath | `mlib::fastmath` | 基于多种后端的并行加速数学库，计划开发 C++ AMP、OpenCL 两种后端。C++ AMP 后端的开发已停滞，OpenCL 后端的开发尚未开始。 |
-| console  | `mlib::console`  | 用于控制台的实用工具。                                       |
-| result   | `mlib::result`   |                                                              |
-| logger   | `mlib::logger`   | 简单的日志类。                                               |
-| process  | `mlib::process`  | 进程包装器，可以对进程进行标准 I/O 操作。                    |
+实例：
+
+```cpp
+#include "mlib/Logger.hpp"
+int main() {
+    mlib::Logger my_logger(Logger::debug);
+    return 0;
+}
+```
 
 ## 🏷️ classic
 

@@ -1,6 +1,6 @@
 #pragma once
 /**
- * @file		result.hpp
+ * @file		Result.hpp
  * @brief		操作结果状态包装器
  *
  * @author		masterLazy
@@ -10,7 +10,7 @@
 #include <string>
 
 namespace mlib {
-	namespace result {
+	namespace Result {
 		/**
 		 * @brief	操作结果状态包装器
 		 * @details	包含状态(是否成功)和一条简短说明
