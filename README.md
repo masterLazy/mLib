@@ -16,7 +16,7 @@ mLib 是一个仅标头（head-only）库，将 `include/` 添加到你的包含
 
 主要分支：
 
-## 🏷️ neo (main)
+## 🏷️ main (neo)
 
 作为主要分支开发中。
 
@@ -46,3 +46,4 @@ int main() {
 这是最早的分支。但是功能很多且缺乏秩序，现已停止维护。但这其中的一些代码片段仍被复用。
 
 我放弃 classic 分支后，创建了 [LazyWeb](https://github.com/masterLazy/LazyWeb)、[LazyMath](https://github.com/masterLazy/LazyMath)、LazyGUI（未上传 github）等库，继承了原 classic 分支的一些子部件。
+
