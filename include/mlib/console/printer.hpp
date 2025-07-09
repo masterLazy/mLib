@@ -1,16 +1,16 @@
 #pragma once
 /**
- * @file		printer.hpp
+ * @file		Printer.hpp
  * @brief		多种输出方式的字符串封装
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
  */
 
-#include "mlib/console.hpp"
+#include "../Console.hpp"
 
 namespace mlib {
-	namespace console {
+	namespace Console {
 		/**
 		* @brief	多种输出方式的字符串封装
 		*/

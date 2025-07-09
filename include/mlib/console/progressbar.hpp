@@ -1,50 +1,50 @@
 #pragma once
 /**
- * @file		progressbar.hpp
- * @brief		½ø¶ÈÌõ
- * @details		ÀàtdqmÑùÊ½
+ * @file		ProgressBar.hpp
+ * @brief		è¿›åº¦æ¡
+ * @details		ç±»tdqmæ ·å¼
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
  */
 
-#include "mlib/console.hpp"
-#include "mlib/function.hpp"
+#include "../Console.hpp"
+#include "../Function.hpp"
 
 namespace mlib {
-	namespace console {
+	namespace Console {
 		const std::string __block_strs[9] = {
-			"",			// ¿Õ
-			"\u258f",	// ×ó 1/8
-			"\u258e",	// ×ó 2/8
-			"\u258d",	// ×ó 3/8
-			"\u258c",	// ×ó 4/8
-			"\u258b",	// ×ó 5/8
-			"\u258a",	// ×ó 6/8
-			"\u2589",	// ×ó 7/8
-			"\u2588"	// ÍêÕû·½¿é
+			"",			// ç©º
+			"\u258f",	// å·¦ 1/8
+			"\u258e",	// å·¦ 2/8
+			"\u258d",	// å·¦ 3/8
+			"\u258c",	// å·¦ 4/8
+			"\u258b",	// å·¦ 5/8
+			"\u258a",	// å·¦ 6/8
+			"\u2589",	// å·¦ 7/8
+			"\u2588"	// å®Œæ•´æ–¹å—
 		};
 		/**
-		 * @brief		´øeta¼ÆËã¹¦ÄÜµÄ½ø¶ÈÌõ
+		 * @brief		å¸¦etaè®¡ç®—åŠŸèƒ½çš„è¿›åº¦æ¡
 		 */
 		class ProgressBar {
 			size_t current, total;
 			clock_t begin_time;
 			int width;
-			std::string title;		// Ä©Î²¶îÍâÌí¼ÓÁËÒ»¸ö¿Õ¸ñ
-			bool is_bytes = false;	// ¹¤×÷Á¿µÄµ¥Î»ÊÇ×Ö½Ú
+			std::string title;		// æœ«å°¾é¢å¤–æ·»åŠ äº†ä¸€ä¸ªç©ºæ ¼
+			bool is_bytes = false;	// å·¥ä½œé‡çš„å•ä½æ˜¯å­—èŠ‚
 		public:
 			/**
-			 * @brief					´´½¨Ò»¸ö½ø¶ÈÌõ
-			 * @param total_of_work		×Ü¹¤×÷Á¿
-			 * @param initial_position	³õÊ¼Î»ÖÃ, ¼´³õÊ¼½ø¶È
-			 * @param width				½ø¶ÈÌõµÄ¿í¶È, Ä¬ÈÏ(-1)Ôò×Ô¶¯Æ¥Åä¿ØÖÆÌ¨¿í¶È
+			 * @brief					åˆ›å»ºä¸€ä¸ªè¿›åº¦æ¡
+			 * @param total_of_work		æ€»å·¥ä½œé‡
+			 * @param initial_position	åˆå§‹ä½ç½®, å³åˆå§‹è¿›åº¦
+			 * @param width				è¿›åº¦æ¡çš„å®½åº¦, é»˜è®¤(-1)åˆ™è‡ªåŠ¨åŒ¹é…æ§åˆ¶å°å®½åº¦
 			 */
 			ProgressBar(size_t total_of_work, size_t initial_position = 0, int width = -1) {
 				current = initial_position;
 				total = total_of_work;
 				if (width == -1) {
-					this->width = console::getWidth();
+					this->width = Console::getWidth();
 				} else {
 					this->width = width;
 				}
@@ -52,17 +52,17 @@ namespace mlib {
 				title = "";
 			}
 			/**
-			 * @brief					´´½¨Ò»¸ö½ø¶ÈÌõ
-			 * @param title				½ø¶ÈÌõ±êÌâ
-			 * @param total_of_work		×Ü¹¤×÷Á¿
-			 * @param initial_position	³õÊ¼Î»ÖÃ, ¼´³õÊ¼½ø¶È
-			 * @param width				½ø¶ÈÌõµÄ¿í¶È, Ä¬ÈÏ(-1)Ôò×Ô¶¯Æ¥Åä¿ØÖÆÌ¨¿í¶È
+			 * @brief					åˆ›å»ºä¸€ä¸ªè¿›åº¦æ¡
+			 * @param title				è¿›åº¦æ¡æ ‡é¢˜
+			 * @param total_of_work		æ€»å·¥ä½œé‡
+			 * @param initial_position	åˆå§‹ä½ç½®, å³åˆå§‹è¿›åº¦
+			 * @param width				è¿›åº¦æ¡çš„å®½åº¦, é»˜è®¤(-1)åˆ™è‡ªåŠ¨åŒ¹é…æ§åˆ¶å°å®½åº¦
 			 */
 			ProgressBar(const std::string& title, size_t total_of_work, size_t initial_position = 0, int width = -1) {
 				current = initial_position;
 				total = total_of_work;
 				if (width == -1) {
-					this->width = console::getWidth();
+					this->width = Console::getWidth();
 				} else {
 					this->width = width;
 				}
@@ -70,15 +70,15 @@ namespace mlib {
 				this->title = title + ' ';
 			}
 
-			/** @brief	ÖØÖÃ½ø¶ÈÌõ */
+			/** @brief	é‡ç½®è¿›åº¦æ¡ */
 			void reset() {
 				current = 0;
 				begin_time = clock();
 			}
 			/**
-			 * @brief					Ôö¼Ó½ø¶È
-			 * @param work_of_forward	ÒªÔö¼ÓµÄ¹¤×÷Á¿
-			 * @return					¸ü¸ÄºóµÄ½ø¶ÈÌõ×ÔÉí
+			 * @brief					å¢åŠ è¿›åº¦
+			 * @param work_of_forward	è¦å¢åŠ çš„å·¥ä½œé‡
+			 * @return					æ›´æ”¹åçš„è¿›åº¦æ¡è‡ªèº«
 			 */
 			ProgressBar& foward(int work_of_forward = 1) {
 				if (current < total) {
@@ -89,60 +89,60 @@ namespace mlib {
 				return *this;
 			}
 			/**
-			 * @brief					ÉèÖÃ½ø¶È
-			 * @param current_work		µ±Ç°¹¤×÷Á¿
+			 * @brief					è®¾ç½®è¿›åº¦
+			 * @param current_work		å½“å‰å·¥ä½œé‡
 			 */
 			void setCurrent(size_t current_work) {
 				current = current_work % total;
 			}
 			/**
-			 * @brief					ÉèÖÃ×Ü¹¤×÷Á¿
-			 * @param total_of_work		×Ü¹¤×÷Á¿
+			 * @brief					è®¾ç½®æ€»å·¥ä½œé‡
+			 * @param total_of_work		æ€»å·¥ä½œé‡
 			 */
 			void setTotal(size_t total_of_work) {
 				total = total_of_work;
 			}
 			/**
-			 * @brief			ÉèÖÃ¿í¶È
-			 * @param width		¿í¶È
+			 * @brief			è®¾ç½®å®½åº¦
+			 * @param width		å®½åº¦
 			 */
 			void setWidth(size_t width) {
 				this->width = width;
 			}
-			/** @brief		»ñÈ¡µ±Ç°Íê³ÉµÄ¹¤×÷Á¿  */
+			/** @brief		è·å–å½“å‰å®Œæˆçš„å·¥ä½œé‡  */
 			size_t getCurrent() const {
 				return current;
 			}
-			/**  @brief		»ñÈ¡×Ü¹¤×÷Á¿ */
+			/**  @brief		è·å–æ€»å·¥ä½œé‡ */
 			size_t getTotal() const {
 				return total;
 			}
 			/**
-			 * @brief		»ñÈ¡ÒÑÓÃÊ±¼ä
-			 * @return		ÒÑÓÃÊ±¼ä(s)
+			 * @brief		è·å–å·²ç”¨æ—¶é—´
+			 * @return		å·²ç”¨æ—¶é—´(s)
 			 */
 			int getTimeSpent() const {
 				return float(clock() - begin_time) / CLOCKS_PER_SEC;
 			}
-			/**  @brief		»ñÈ¡¹À¼ÆÊ£ÓàÊ±¼ä(s) */
+			/**  @brief		è·å–ä¼°è®¡å‰©ä½™æ—¶é—´(s) */
 			int getEta() const {
 				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
 				return sec / current * (total - current);
 			}
-			/** @brief		»ñÈ¡Ã¿ÃëÍê³ÉµÄ¹¤×÷Á¿ */
+			/** @brief		è·å–æ¯ç§’å®Œæˆçš„å·¥ä½œé‡ */
 			float getItps() const {
 				return current / getTimeSpent();
 			}
 			/**
-			 * @brief		¸æÖª¹¤×÷Á¿µÄµ¥Î»ÊÇ×Ö½Ú
-			 * @details		¹¤×÷Á¿½«ÒÔ×Ö½ÚÊı¸ñÊ½ÏÔÊ¾
+			 * @brief		å‘ŠçŸ¥å·¥ä½œé‡çš„å•ä½æ˜¯å­—èŠ‚
+			 * @details		å·¥ä½œé‡å°†ä»¥å­—èŠ‚æ•°æ ¼å¼æ˜¾ç¤º
 			 */
 			void workOfBytes(bool is_work_of_bytes) {
 				is_bytes = is_work_of_bytes;
 			}
 			/**
-			 * @brief		ÓÃcout´òÓ¡½ø¶ÈÌõ
-			 * @return		½ø¶ÈÌõ×ÔÉí
+			 * @brief		ç”¨coutæ‰“å°è¿›åº¦æ¡
+			 * @return		è¿›åº¦æ¡è‡ªèº«
 			 */
 			ProgressBar& print(bool clearLine = true) {
 				if (clearLine) {
@@ -153,11 +153,11 @@ namespace mlib {
 				return *this;
 			}
 
-			// ºËĞÄ´úÂë
+			// æ ¸å¿ƒä»£ç 
 
 			/**
-			 * @brief		»ñÈ¡½ø¶ÈÌõ×Ö·û´®
-			 * @example		100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€| 128/128 [00:02<00:00, 58.55it/s]
+			 * @brief		è·å–è¿›åº¦æ¡å­—ç¬¦ä¸²
+			 * @example		100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 128/128 [00:02<00:00, 58.55it/s]
 			 */
 			std::string toString() {
 				std::string str;
@@ -172,15 +172,15 @@ namespace mlib {
 				if (is_bytes) {
 					if (current == 0 or sec == 0 or eta < 0) {
 						sprintf_s(suf, "| %s/%s [%02ld:%02ld<?, ?B/s]",
-							funciton::ByteToString(current).c_str(),
-							funciton::ByteToString(total).c_str(),
+							Funciton::ByteToString(current).c_str(),
+							Funciton::ByteToString(total).c_str(),
 							int(sec) / 60, int(sec) % 60);
 					} else { // _B/s
 						sprintf_s(suf, "| %s/%s [%02d:%02ld<%02d:%02ld, %s/s]",
-							funciton::ByteToString(current).c_str(),
-							funciton::ByteToString(total).c_str(),
+							Funciton::ByteToString(current).c_str(),
+							Funciton::ByteToString(total).c_str(),
 							int(sec) / 60, int(sec) % 60, eta / 60, eta % 60,
-							funciton::ByteToString(current / sec).c_str());
+							Funciton::ByteToString(current / sec).c_str());
 					}
 				} else {
 					if (current == 0 or sec == 0 or eta < 0) {
@@ -194,9 +194,9 @@ namespace mlib {
 							current, total, int(sec) / 60, int(sec) % 60, eta / 60, eta % 60, sec / current);
 					}
 				}
-				// ¨€¨€¨€¨€¨€¨€¨€
+				// â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ
 				int width = this->width - title.size() - strnlen_s(pre, 8) - strnlen_s(suf, 128);
-				width = max(width, 0);
+				width = std::max(width, 0);
 				float blocks = float(current) / total * width;
 				for (int i = 0; i < int(blocks); i++) {
 					str += __block_strs[8];

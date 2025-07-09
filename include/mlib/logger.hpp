@@ -1,7 +1,7 @@
 #pragma once
 /**
- * @file		logger.hpp
- * @brief		¼òµ¥µÄÈÕÖ¾Àà
+ * @file		Logger.hpp
+ * @brief		æ—¥å¿—å™¨
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -14,7 +14,11 @@
 #include "function.hpp"
 
 namespace mlib {
-	namespace logger {
+	/**
+	* @brief	æ—¥å¿—å™¨
+	*/
+	class Logger {
+	public:
 		enum LogLevel {
 			debug = 0,
 			info = 1,
@@ -22,86 +26,67 @@ namespace mlib {
 			error = 3,
 			fatal = 4
 		};
+	private:
+		LogLevel log_level;
+		std::ostream& os;
+		bool color;
+
+		void log(LogLevel log_level, const std::string& msg) const {
+			if (log_level < this->log_level) return;
+			switch (log_level) {
+			case debug:
+				os << "[DEBUG";
+				break;
+			case info:
+				if (color) os << Console::fCyan;
+				os << "[INFO";
+				break;
+			case warn:
+				if (color) os << Console::fYellow;
+				os << "[WARN";
+				break;
+			case error:
+				if (color) os << Console::fRed;
+				os << "[ERROR";
+				break;
+			case fatal:
+				if (color) os << Console::fRed << Console::fUdl;
+				os << "[FATAL";
+				break;
+			}
+			os << "] " << msg << std::endl;
+			if (color) os << Console::fReset;
+		}
+	public:
 		/**
-		* @brief	¼òµ¥µÄÈÕÖ¾Àà
+		* @param log_level	è¾“å‡ºæ—¥å¿—çº§åˆ«
+		* @param os			è¦ä½¿ç”¨çš„è¾“å‡ºæµ
+		* @param color		æ˜¯å¦ä½¿ç”¨å½©è‰²è¾“å‡º
 		*/
-		class Logger {
-			LogLevel log_level;
-			bool date_time;
-			std::ostream& os;
-			std::vector<std::string> filenames;
-			void log(LogLevel log_level, const std::string& msg) const {
-				if (log_level < this->log_level) return;
-				if (date_time) {
-					dispatch(function::GetFormattedDateTime(false));dispatch(" ");
-				}
-				switch (log_level) {
-				case logger::debug:
-					dispatch("[DEBUG] ");
-					break;
-				case logger::info:
-					dispatch("[INFO] ");
-					break;
-				case logger::warn:
-					dispatch("[WARN] ");
-					break;
-				case logger::error:
-					dispatch("[ERROR]");
-					break;
-				case logger::fatal:
-					dispatch("[FATAL]");
-					break;
-				}
-				dispatch(" ");dispatch(msg);dispatch("\n");
-			}
-			void dispatch(std::string msg) const {
-				os << msg;
-				std::ofstream of;
-				for (auto filename : filenames) {
-					of.open(filename);
-					if (not of.is_open())continue; // ºöÂÔÕâ¸öÊä³öÄ¿±ê
-					of << msg;
-					of.close();
-				}
-			}
-		public:
-			/**
-			* @param log_level	Êä³öÈÕÖ¾¼¶±ð
-			* @param date_time	ÊÇ·ñÊä³öÊ±¼ä
-			* @param os			ÒªÊ¹ÓÃµÄÊä³öÁ÷
-			*/
-			Logger(LogLevel log_level = logger::info, bool date_time = true, std::ostream& os = std::clog) :
-				log_level(log_level), date_time(date_time), os(os) {
-			}
+		Logger(LogLevel log_level = info, std::ostream& os = std::clog, bool color = true) :
+			log_level(log_level), color(color), os(os) {
+		}
 
-			/**
-			 * @brief 			Ìí¼ÓÎÄ¼þÊä³ö
-			 * @param filename	ÒªÐ´ÈëµÄÎÄ¼þÃû
-			 */
-			void addFileSink(std::string filename) {
-				filenames.push_back(filename);
-			}
-
-			/** @brief µ÷ÊÔÐÅÏ¢ */
-			void debug(const std::string& msg) const {
-				log(logger::debug, msg);
-			}
-			/** @brief Ò»°ãÐÅÏ¢ */
-			void info(const std::string& msg) const {
-				log(logger::info, msg);
-			}
-			/** @brief ¾¯¸æ */
-			void warn(const std::string& msg) const {
-				log(logger::warn, msg);
-			}
-			/** @brief ´íÎó */
-			void error(const std::string& msg) const {
-				log(logger::error, msg);
-			}
-			/** @brief ÖÂÃü´íÎó */
-			void fatal(const std::string& msg) const {
-				log(logger::fatal, msg);
-			}
-		};
-	} // namespace logger
+		/** @brief è°ƒè¯•ä¿¡æ¯ */
+		void debug(const std::string& msg) const {
+			log(debug, msg);
+		}
+		/** @brief ä¸€èˆ¬ä¿¡æ¯ */
+		void info(const std::string& msg) const {
+			log(info, msg);
+		}
+		/** @brief è­¦å‘Š */
+		void warn(const std::string& msg) const {
+			log(warn, msg);
+		}
+		/** @brief é”™è¯¯ */
+		void error(const std::string& msg) const {
+			log(error, msg);
+		}
+		/** @brief è‡´å‘½é”™è¯¯ */
+		void fatal(const std::string& msg) const {
+			log(fatal, msg);
+		}
+	};
+} // namespace logger
 } // namespace mlib
