@@ -24,6 +24,8 @@ namespace mlib {
 	namespace ThreadPool {
 		/** @brief	线程信号 */
 		enum Signal { pause, run, exit };
+		/** @brief	任务编号类型 */
+		typedef unsigned long long taskId_t;
 
 		/**
 		* @brief	线程池
@@ -32,7 +34,6 @@ namespace mlib {
 		template<typename TaskType> class ThreadPool {
 		public:
 			typedef std::function<void(TaskType, const Signal&)> workFunc_t;
-			typedef unsigned long long taskId_t;
 
 		private:
 			struct TaskEx {
@@ -47,7 +48,7 @@ namespace mlib {
 			* @param work_func	执行业务的函数
 			*/
 			ThreadPool(size_t count, const workFunc_t& work_func) : count(count), work_func(work_func) {
-				count_active.store(0);
+				count_alive.store(0);
 				for (size_t i = 0; i < count; i++) {
 					threads.push_back(new std::thread(&ThreadPool::threadHandler, this));
 					threads[i]->detach();
@@ -57,7 +58,7 @@ namespace mlib {
 				if (not terminated) {
 					allExit();
 					std::unique_lock<std::mutex> lk(mtx);
-					exit_cv.wait(lk, [this] { return count_active == 0; });
+					exit_cv.wait(lk, [this] { return count_alive == 0; });
 				}
 				for (size_t i = 0; i < count; i++) {
 					delete threads[i];
@@ -68,9 +69,9 @@ namespace mlib {
 			 * @brief	添加任务到队列 
 			 * @return	独一无二的任务编号
 			 */
-			taskId_t pushTask(const TaskType& new_task) {
+			taskId_t addTask(const TaskType& new_task) {
 				std::unique_lock<std::mutex> lk(mtx);
-				tasks.push({ new_task, task_id});
+				tasks.push_back({ new_task, task_id});
 				cv.notify_one(); // 只让一个来抢
 				return task_id++;
 			}
@@ -104,9 +105,9 @@ namespace mlib {
 				return res;
 			}
 
-			/** @brief	获取当前活跃的线程数量 */
-			size_t getActiveThreads() const {
-				return count_active;
+			/** @brief	获取当前存活的线程数量 */
+			size_t getAliveThreads() const {
+				return count_alive;
 			}
 
 			/** @brief	获取任务队列长度 */
@@ -121,8 +122,8 @@ namespace mlib {
 			 */
 			bool removeTask(taskId_t id) {
 				std::unique_lock<std::mutex> lk(mtx);
-				for (size_t i = 0; i < tasks.size(); i++) {
-					if (i.id == id) {
+				for (auto i = tasks.begin(); i != tasks.end(); i++) {
+					if (i->id == id) {
 						tasks.erase(i);
 						return true;
 					}
@@ -140,7 +141,7 @@ namespace mlib {
 			size_t count;
 			workFunc_t work_func;
 			taskId_t task_id = 0;
-			std::atomic<size_t> count_active;
+			std::atomic<size_t> count_alive;
 			std::vector<std::thread*> threads;
 			std::vector<TaskEx> tasks;
 			Signal signal = pause;
@@ -151,7 +152,7 @@ namespace mlib {
 
 			/** @brief	线程入口点 */
 			void threadHandler() {
-				count_active++;
+				count_alive++;
 				TaskEx task_ex;
 				while (true) {
 					{
@@ -166,7 +167,7 @@ namespace mlib {
 							mtx.unlock();
 						} else {
 							task_ex = tasks.front();
-							tasks.erase(0);
+							tasks.erase(tasks.begin());
 							mtx.unlock();
 							work_func(task_ex.task, signal);
 						}
@@ -174,8 +175,8 @@ namespace mlib {
 						break;
 					}
 				}
-				count_active--;
-				if (count_active == 0) {
+				count_alive--;
+				if (count_alive == 0) {
 					exit_cv.notify_all(); // 兄弟你可以开始 delete 了
 				}
 			}
