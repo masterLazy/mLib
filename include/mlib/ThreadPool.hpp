@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file		ThreadPool.hpp
- * @brief		高性能线程池
+ * @brief		简单的线程池
  *
  * @author		masterLazy
  * @copyright	Copyright (c) 2025 masterLazy
@@ -28,8 +28,7 @@ namespace mlib {
 		typedef unsigned long long taskId_t;
 
 		/**
-		* @brief	线程池
-		* @details	TaskType
+		* @brief	简单的线程池
 		*/
 		template<typename TaskType> class ThreadPool {
 		public:

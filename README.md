@@ -26,10 +26,10 @@ mLib 是一个仅标头（head-only）库，将 `include/` 添加到你的包含
 | -------------- | ------------------------------ | --------------------------------------- |
 | Console.hpp    | `mlib::Console`（命名空间）    | 用于控制台的实用工具                    |
 | Function.hpp   | `mlib::Function`（命名空间）   | 实用函数                                |
-| Logger.hpp     | `mlib::Logger`                 | 日志器                                  |
+| Logger.hpp     | `mlib::Logger`                 | 简单的日志器                            |
 | Process.hpp    | `mlib::Process`                | 包装一个进程，可以对其进行 Std I/O 操作 |
 | Result.hpp     | `mlib::Result`                 | 操作结果状态包装器                      |
-| ThreadPool.hpp | `mlib::ThreadPool`（命名空间） | 高性能线程池                            |
+| ThreadPool.hpp | `mlib::ThreadPool`（命名空间） | 简单的线程池                            |
 
 实例：
 

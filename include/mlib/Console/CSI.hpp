@@ -30,5 +30,5 @@ namespace mlib {
 		/** @brief 字体品红色 */	const Printer fMagenta("\033[35m");
 		/** @brief 字体青色 */	const Printer fCyan("\033[36m");
 		/** @brief 字体白色 */	const Printer fWhite("\033[37m");
-	} // namespace console
+	} // namespace Console
 } // namespace mlib

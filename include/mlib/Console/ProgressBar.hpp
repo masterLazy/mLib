@@ -211,5 +211,5 @@ namespace mlib {
 				return str;
 			}
 		};
-	} // namespace console
+	} // namespace Console
 } // namespace mlib

@@ -33,5 +33,5 @@ namespace mlib {
 		inline short getHeight() {
 			return getScreenInfo().dwSize.Y;
 		}
-	} // namespace console
+	} // namespace Console
 } // namespace mlib

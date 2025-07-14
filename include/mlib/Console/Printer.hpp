@@ -35,5 +35,5 @@ namespace mlib {
 				std::cout << str << std::flush;
 			}
 		};
-	} // namespace console
+	} // namespace Console
 } // namespace mlib
