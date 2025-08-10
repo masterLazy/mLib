@@ -29,19 +29,19 @@ namespace mlib {
 		};
 	private:
 		std::ofstream of; // 文件输出流
-		Level log_level;
+		Level logLevel;
 		std::string filename;
 		bool datetime;
 		std::mutex mtx;
 
-		void log(Level log_level, const std::string& msg) {
-			if (log_level < this->log_level) return;
+		void log(Level logLevel, const std::string& msg) {
+			if (logLevel < this->logLevel) return;
 			std::string full_msg;
 			if (datetime) {
-				full_msg += "[" + Function::GetFormatDateTime(true, true) + "]";
+				full_msg += "[" + Function::GetFormatDateTime(true, true) + "] ";
 			}
 			full_msg += "[";
-			switch (log_level) {
+			switch (logLevel) {
 			case Level::debug:
 				full_msg += "DEBUG";
 				break;
@@ -61,14 +61,14 @@ namespace mlib {
 			full_msg += "]: " + msg + "\n";
 			emit(full_msg);
 		}
-		void log(Level log_level, const std::wstring& msg) {
-			if (log_level < this->log_level) return;
+		void log(Level logLevel, const std::wstring& msg) {
+			if (logLevel < this->logLevel) return;
 			std::wstring full_msg;
 			if (datetime) {
-				full_msg += L"[" + Function::GetFormatDateTimeW(true, true) + L"]";
+				full_msg += L"[" + Function::GetFormatDateTimeW(true, true) + L"] ";
 			}
 			full_msg += L"[";
-			switch (log_level) {
+			switch (logLevel) {
 			case Level::debug:
 				full_msg += L"DEBUG";
 				break;
@@ -112,12 +112,12 @@ namespace mlib {
 		}
 	public:
 		/**
-		* @param log_level	输出日志级别
+		* @param logLevel	输出日志级别
 		* @param dir		输出文件名 (留空表示不使用文件日志)
 		* @param datetime	是否追加日期-时间信息
 		*/
-		Logger(Level log_level = Level::info, std::string filename = "", bool datetime = true) :
-			log_level(log_level), filename(filename), datetime(datetime) {
+		Logger(Level logLevel = Level::info, std::string filename = "", bool datetime = true) :
+			logLevel(logLevel), filename(filename), datetime(datetime) {
 			if (not filename.empty()) {
 				std::ofstream f(filename, std::ios::ate); // 清空文件
 				f.close();

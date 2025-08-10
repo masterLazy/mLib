@@ -44,10 +44,10 @@ namespace mlib {
 			/**
 			* @brief			初始化线程池
 			* @param count		线程数量
-			* @param work_func	执行业务的函数
+			* @param workFunc	执行业务的函数
 			*/
-			ThreadPool(size_t count, const workFunc_t& work_func) : count(count), work_func(work_func) {
-				count_alive.store(0);
+			ThreadPool(size_t count, const workFunc_t& workFunc) : count(count), workFunc(workFunc) {
+				countAlive.store(0);
 				for (size_t i = 0; i < count; i++) {
 					threads.push_back(new std::thread(&ThreadPool::threadHandler, this));
 					threads[i]->detach();
@@ -57,7 +57,7 @@ namespace mlib {
 				if (not terminated) {
 					allExit();
 					std::unique_lock<std::mutex> lk(mtx);
-					exit_cv.wait(lk, [this] { return count_alive == 0; });
+					cvExit.wait(lk, [this] { return countAlive == 0; });
 				}
 				for (size_t i = 0; i < count; i++) {
 					delete threads[i];
@@ -70,9 +70,9 @@ namespace mlib {
 			 */
 			taskId_t addTask(const TaskType& new_task) {
 				std::unique_lock<std::mutex> lk(mtx);
-				tasks.push_back({ new_task, task_id});
+				tasks.push_back({ new_task, taskId});
 				cv.notify_one(); // 只让一个来抢
-				return task_id++;
+				return taskId++;
 			}
 
 			/** @brief	通知所有线程开始工作 */
@@ -106,7 +106,7 @@ namespace mlib {
 
 			/** @brief	获取当前存活的线程数量 */
 			size_t getAliveThreads() const {
-				return count_alive;
+				return countAlive;
 			}
 
 			/** @brief	获取任务队列长度 */
@@ -138,20 +138,20 @@ namespace mlib {
 
 		private:
 			size_t count;
-			workFunc_t work_func;
-			taskId_t task_id = 0;
-			std::atomic<size_t> count_alive;
+			workFunc_t workFunc;
+			taskId_t taskId = 0;
+			std::atomic<size_t> countAlive;
 			std::vector<std::thread*> threads;
 			std::vector<TaskEx> tasks;
 			Signal signal = pause;
 			bool terminated = false;
 
 			std::mutex mtx;
-			std::condition_variable cv, exit_cv;
+			std::condition_variable cv, cvExit;
 
 			/** @brief	线程入口点 */
 			void threadHandler() {
-				count_alive++;
+				countAlive++;
 				TaskEx task_ex;
 				while (true) {
 					{
@@ -168,15 +168,15 @@ namespace mlib {
 							task_ex = tasks.front();
 							tasks.erase(tasks.begin());
 							mtx.unlock();
-							work_func(task_ex.task, signal);
+							workFunc(task_ex.task, signal);
 						}
 					} else if (signal == exit) {
 						break;
 					}
 				}
-				count_alive--;
-				if (count_alive == 0) {
-					exit_cv.notify_all(); // 兄弟你可以开始 delete 了
+				countAlive--;
+				if (countAlive == 0) {
+					cvExit.notify_all(); // 兄弟你可以开始 delete 了
 				}
 			}
 		};

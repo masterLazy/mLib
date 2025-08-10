@@ -20,7 +20,7 @@ namespace mlib {
 	class Process {
 		HANDLE to_hRead = NULL, to_hWrite = NULL;
 		HANDLE from_hRead = NULL, from_hWrite = NULL;
-		PROCESS_INFORMATION process_info;
+		PROCESS_INFORMATION processInfo;
 	public:
 		/**
 		* @brief				实例化进程
@@ -57,7 +57,7 @@ namespace mlib {
 				command_line.empty() ? NULL : (char*)command_line.c_str(),
 				NULL, NULL, TRUE, NULL, NULL,
 				working_dir.empty() ? NULL : working_dir.c_str(),
-				&sInfo, &process_info) == 0) {
+				&sInfo, &processInfo) == 0) {
 				throw std::exception("Failed to create process");
 			}
 		}
@@ -71,7 +71,7 @@ namespace mlib {
 			if (from_hRead) {
 				CloseHandle(from_hRead);
 			}
-			CloseHandle(process_info.hProcess);
+			CloseHandle(processInfo.hProcess);
 		}
 		/**
 		* @brief	向进程的 stdin 写入数据
@@ -147,14 +147,14 @@ namespace mlib {
 		*/
 		DWORD getExitCode() {
 			DWORD code;
-			GetExitCodeProcess(process_info.hProcess, &code);
+			GetExitCodeProcess(processInfo.hProcess, &code);
 			return code;
 		}
 		/**
 		* @brief	强制终止进程
 		*/
 		void kill(UINT exit_code = 0) {
-			TerminateProcess(process_info.hProcess, exit_code);
+			TerminateProcess(processInfo.hProcess, exit_code);
 		}
 	};
 } // namespace  mlib

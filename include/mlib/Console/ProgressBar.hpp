@@ -29,10 +29,10 @@ namespace mlib {
 		 */
 		class ProgressBar {
 			size_t current, total;
-			clock_t begin_time;
+			clock_t beginTime;
 			int width;
 			std::string title;		// 末尾额外添加了一个空格
-			bool is_bytes = false;	// 工作量的单位是字节
+			bool isBytes = false;	// 工作量的单位是字节
 		public:
 			/**
 			 * @brief					创建一个进度条
@@ -48,7 +48,7 @@ namespace mlib {
 				} else {
 					this->width = width;
 				}
-				begin_time = clock_t();
+				beginTime = clock_t();
 				title = "";
 			}
 			/**
@@ -66,14 +66,14 @@ namespace mlib {
 				} else {
 					this->width = width;
 				}
-				begin_time = clock_t();
+				beginTime = clock_t();
 				this->title = title + ' ';
 			}
 
 			/** @brief	重置进度条 */
 			void reset() {
 				current = 0;
-				begin_time = clock();
+				beginTime = clock();
 			}
 			/**
 			 * @brief					增加进度
@@ -122,11 +122,11 @@ namespace mlib {
 			 * @return		已用时间(s)
 			 */
 			int getTimeSpent() const {
-				return float(clock() - begin_time) / CLOCKS_PER_SEC;
+				return float(clock() - beginTime) / CLOCKS_PER_SEC;
 			}
 			/**  @brief		获取估计剩余时间(s) */
 			int getEta() const {
-				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
+				float sec = float(clock() - beginTime) / CLOCKS_PER_SEC;
 				return sec / current * (total - current);
 			}
 			/** @brief		获取每秒完成的工作量 */
@@ -138,7 +138,7 @@ namespace mlib {
 			 * @details		工作量将以字节数格式显示
 			 */
 			void workOfBytes(bool is_work_of_bytes) {
-				is_bytes = is_work_of_bytes;
+				isBytes = is_work_of_bytes;
 			}
 			/**
 			 * @brief		用cout打印进度条
@@ -167,9 +167,9 @@ namespace mlib {
 				// | x/x [xx:xx<xx:xx, xx.xxit/s]
 				// or | x/x [xx:xx<xx:xx, xx.xxs/it]
 				char suf[512] = { 0 };
-				float sec = float(clock() - begin_time) / CLOCKS_PER_SEC;
+				float sec = float(clock() - beginTime) / CLOCKS_PER_SEC;
 				size_t eta = sec / current * (total - current);
-				if (is_bytes) {
+				if (isBytes) {
 					if (current == 0 or sec == 0 or eta < 0) {
 						sprintf_s(suf, "| %s/%s [%02ld:%02ld<?, ?B/s]",
 							Funciton::ByteToString(current).c_str(),
